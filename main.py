@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #-------------------------------------------------------------------------------
 # Name:        module1
 # Purpose: use a previously written program that processes the output of gaussian
@@ -56,9 +57,9 @@ while len(output_path) == 0 :
 os.mkdir(output_path)
 
 #by 05/08, we are dealing directly with the mol.mol file
-integrated_dia_file     = open(''.join([output_path, os.sep, "integrate_dia.inp"]), 'w')
-integrate_para_file     = open(''.join([output_path, os.sep, "integrate_para.inp"]), 'w')
-integrate_total_file    = open(''.join([output_path, os.sep, "integrate_total.inp"]), 'w')
+#integrated_dia_file     = open(''.join([output_path, os.sep, "integrate_dia.inp"]), 'w')
+#integrate_para_file     = open(''.join([output_path, os.sep, "integrate_para.inp"]), 'w')
+#integrate_total_file    = open(''.join([output_path, os.sep, "integrate_total.inp"]), 'w')
 j_dia_file              = open(''.join([output_path, os.sep, "j_dia.inp"]), 'w')
 j_para_file             = open(''.join([output_path, os.sep, "j_para.inp"]), 'w')
 j_total_file            = open(''.join([output_path, os.sep, "j_total.inp"]), 'w')
@@ -66,7 +67,9 @@ london_file             = open(''.join([output_path, os.sep, "london.inp"]), 'w'
 #end of file creation/manipulation module
 
 #write_integrated_dia_file(integrated_dia_file, scf_file, mol_file)
-output_files = [integrated_dia_file, integrate_para_file, integrate_total_file, j_dia_file, j_para_file, j_total_file, london_file]
+#THE HANDLING OF THESE FILES WHERE DELEGATED TO THE SPECIFIC CODE
+#integrated_dia_file, integrate_para_file, integrate_total_file,
+output_files = [j_dia_file, j_para_file, j_total_file, london_file]
 try:
     write_london(london_file, scf_file, mol_file)
 
@@ -74,9 +77,9 @@ try:
     write_j_para(j_para_file, scf_file, mol_file)
     write_j_total(j_total_file, scf_file, mol_file)
 
-    write_integrated_dia(integrated_dia_file, scf_file, mol_file)
-    write_integrated_para(integrate_para_file, scf_file, mol_file)
-    write_integrated_total(integrate_total_file, scf_file, mol_file)
+    write_integrated_dia(output_path, scf_file, mol_file)
+    write_integrated_para(output_path, scf_file, mol_file)
+    write_integrated_total(output_path, scf_file, mol_file)
 
 except:
     raise
