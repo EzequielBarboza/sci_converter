@@ -32,8 +32,8 @@ def write_j_dia(j_dia_file, mol_file):
 
     biggest_ = str(math.ceil(get_biggest_coordinate(mol_file) * 2))
     fst_point = ['-' + biggest_, '-' + biggest_, '\n']
-    snd_point = ['+' + biggest_, '-' + biggest_, '\n']
-    trd_point = ['-' + biggest_, '+' + biggest_, '\n']
+    snd_point = [biggest_, '-' + biggest_, '\n']
+    trd_point = ['-' + biggest_, biggest_, '\n']
     index = 0 if axis == 'X' else 1 if axis == 'Y' else 2
     fst_point.insert(index, '1.0')
     snd_point.insert(index, '1.0')
@@ -76,8 +76,8 @@ def write_j_para(j_para_file, mol_file):
 
     biggest_ = str(math.ceil(get_biggest_coordinate(mol_file) * 2))
     fst_point = ['-' + biggest_, '-' + biggest_, '\n']
-    snd_point = ['+' + biggest_, '-' + biggest_, '\n']
-    trd_point = ['-' + biggest_, '+' + biggest_, '\n']
+    snd_point = [biggest_, '-' + biggest_, '\n']
+    trd_point = ['-' + biggest_, biggest_, '\n']
     index = 0 if axis == 'X' else 1 if axis == 'Y' else 2
     fst_point.insert(index, '1.0')
     snd_point.insert(index, '1.0')
@@ -119,8 +119,8 @@ def write_j_total(j_total_file, mol_file):
 
     biggest_ = str(math.ceil(get_biggest_coordinate(mol_file) * 2))
     fst_point = ['-' + biggest_, '-' + biggest_, '\n']
-    snd_point = ['+' + biggest_, '-' + biggest_, '\n']
-    trd_point = ['-' + biggest_, '+' + biggest_, '\n']
+    snd_point = [biggest_, '-' + biggest_, '\n']
+    trd_point = ['-' + biggest_, biggest_, '\n']
     index = 0 if axis == 'X' else 1 if axis == 'Y' else 2
     fst_point.insert(index, '1.0')
     snd_point.insert(index, '1.0')
