@@ -12,7 +12,7 @@ def write_london(london_file, scf_file, mol_file):
         else :
             london_file.write('**PROPERTIES' + '\n')
             plane = get_p_axis(mol_file)
-            london_file.write(plane + '\n')
+            london_file.write('.' + plane + '\n')
             london_file.write('*NMR\n')
             london_file.write('.LONDON\n')
             london_file.write('.DOEPRN\n')

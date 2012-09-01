@@ -39,11 +39,11 @@ def write_j_dia(j_dia_file, mol_file):
     snd_point.insert(index, '1.0')
     trd_point.insert(index, '1.0')
 
-    j_dia_file.write(string.join(fst_point, " "))
-    j_dia_file.write(string.join(snd_point, " "))
-    j_dia_file.write('200' + '\n')
-    j_dia_file.write(string.join(trd_point, " "))
-    j_dia_file.write('200' + '\n')
+    j_dia_file.write(' '.join(fst_point))
+    j_dia_file.write(' '.join(snd_point))
+    j_dia_file.write('200\n')
+    j_dia_file.write(' '.join(trd_point))
+    j_dia_file.write('200\n')
 
     j_dia_file.write('*END OF\n')
 
@@ -82,11 +82,11 @@ def write_j_para(j_para_file, mol_file):
     fst_point.insert(index, '1.0')
     snd_point.insert(index, '1.0')
     trd_point.insert(index, '1.0')
-    j_para_file.write(string.join(fst_point, " "))
-    j_para_file.write(string.join(snd_point, " "))
-    j_para_file.write('200' + '\n')
-    j_para_file.write(string.join(trd_point, " "))
-    j_para_file.write('200' + '\n')
+    j_para_file.write(' '.join(fst_point))
+    j_para_file.write(' '.join(snd_point))
+    j_para_file.write('200\n')
+    j_para_file.write(' '.join(trd_point))
+    j_para_file.write('200\n')
 
     j_para_file.write('*END OF\n')
 
@@ -126,11 +126,11 @@ def write_j_total(j_total_file, mol_file):
     snd_point.insert(index, '1.0')
     trd_point.insert(index, '1.0')
 
-    j_total_file.write(string.join(fst_point, " "))
-    j_total_file.write(string.join(snd_point, " "))
-    j_total_file.write('200' + '\n')
-    j_total_file.write(string.join(trd_point, " "))
-    j_total_file.write('200' + '\n')
+    j_total_file.write(' '.join(fst_point))
+    j_total_file.write(' '.join(snd_point))
+    j_total_file.write('200\n')
+    j_total_file.write(' '.join(trd_point))
+    j_total_file.write('200\n')
 
     j_total_file.write('*END OF\n')
 

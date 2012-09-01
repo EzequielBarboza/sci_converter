@@ -56,10 +56,10 @@ while len(output_path) == 0 :
 
 os.mkdir(output_path)
 
-mol_file_copy = output_path + os.pathsep + os.path.basename(mol_file_name)
+mol_file_copy = output_path + os.sep + os.path.basename(mol_file_name)
 shutil.copy2(mol_file_name, mol_file_copy)
 
-scf_file_copy = output_path + os.pathsep + os.path.basename(scf_file_name)
+scf_file_copy = output_path + os.sep + os.path.basename(scf_file_name)
 shutil.copy2(scf_file_name, scf_file_copy)
 
 print 'Working on the following files'
