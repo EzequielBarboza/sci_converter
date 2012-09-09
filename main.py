@@ -17,9 +17,12 @@ import os
 import shutil
 
 from london     import write_london
-from j          import write_j_dia, write_j_para, write_j_total
-from integrate import Integrate#write_integrate_dia, write_integrate_para, write_integrate_total
+from j          import J#write_j_dia, write_j_para, write_j_total
+from integrate  import Integrate#write_integrate_dia, write_integrate_para, write_integrate_total
+from molecule   import Molecule
+from scf        import Scf
 
+from module import Module
 #log_file = sys.argv[1] #soon we will be receiving the .log file (output from a gaussian processing)
 mol_file_name = sys.argv[1]
 scf_file_name = sys.argv[2]
@@ -67,31 +70,36 @@ print 'Mol file: '+ mol_file_name
 print 'SCF file: ' + scf_file_name
 print 'Output folder: ' + output_path
 
-#by 05/08, we are dealing directly with the mol.mol file
-#integrated_dia_file     = open(''.join([output_path, os.sep, "integrate_dia.inp"]), 'w')
-#integrate_para_file     = open(''.join([output_path, os.sep, "integrate_para.inp"]), 'w')
-#integrate_total_file    = open(''.join([output_path, os.sep, "integrate_total.inp"]), 'w')
-j_dia_file              = open(''.join([output_path, os.sep, "j_dia.inp"]), 'w')
-j_para_file             = open(''.join([output_path, os.sep, "j_para.inp"]), 'w')
-j_total_file            = open(''.join([output_path, os.sep, "j_total.inp"]), 'w')
-london_file             = open(''.join([output_path, os.sep, "london.inp"]), 'w')
+##j_dia_file      = open(''.join([output_path, os.sep, "j_dia.inp"]), 'w')
+##j_para_file     = open(''.join([output_path, os.sep, "j_para.inp"]), 'w')
+##j_total_file    = open(''.join([output_path, os.sep, "j_total.inp"]), 'w')
+##london_file     = open(''.join([output_path, os.sep, "london.inp"]), 'w')
 #end of file creation/manipulation module
 
 #write_integrate_dia_file(integrated_dia_file, scf_file, mol_file)
 #THE HANDLING OF THESE FILES WHERE DELEGATED TO THE SPECIFIC CODE
 #integrated_dia_file, integrate_para_file, integrate_total_file,
-output_files = [j_dia_file, j_para_file, j_total_file, london_file]
+#output_files = [j_dia_file, j_para_file, j_total_file, london_file]
 try:
-    write_london(london_file, scf_file, mol_file)
+    #assemble input
+    scf = Scf(scf_file)
+    molecule = Molecule(mol_file)
 
-    write_j_dia(j_dia_file, mol_file)
-    write_j_para(j_para_file, mol_file)
-    write_j_total(j_total_file, mol_file)
+    #assemble output
+    l = write_london(scf, molecule)
+##    write_j_dia(j_dia_file, mol_file)
+##    write_j_para(j_para_file, mol_file)
+##    write_j_total(j_total_file, mol_file)
 
-    integrate = Integrate(output_path, mol_file)
-    integrate.write_integrate_dia()
-    integrate.write_integrate_para()
-    integrate.write_integrate_total()
+    j = J(scf_file, molecule)
+    j.write_j_dia()
+##    j.write_j_para()
+##    j.write_j_total()
+##
+##    integrate = Integrate(output_path, mol_file)
+##    integrate.write_integrate_dia()
+##    integrate.write_integrate_para()
+##    integrate.write_integrate_total()
 
 except:
     raise
@@ -105,6 +113,9 @@ except:
 
 ##    sys.exit()
 # in the end, close everything
-for file_ in output_files :
-    file_.close()
+##for file_ in output_files :
+##    file_.close()
 sys.exit()
+
+def teste():
+    print 'va a puta que pariu'

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-from mol import get_p_axis
 import os
+
+from molecule import Molecule
 
 class Integrate():
     def __init__(self, output_path, mol_file):

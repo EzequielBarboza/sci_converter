@@ -9,3 +9,18 @@ def is_number(s):
         except ValueError:
             return False
     return True
+
+
+class InvalidName(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        return repr(self.msg)
+
+class MissingInformation(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        return repr(self.msg)
