@@ -21,8 +21,11 @@ from j          import J#write_j_dia, write_j_para, write_j_total
 from integrate  import Integrate#write_integrate_dia, write_integrate_para, write_integrate_total
 from molecule   import Molecule
 from scf        import Scf
+from template   import Template
+
 
 from module import Module
+
 #log_file = sys.argv[1] #soon we will be receiving the .log file (output from a gaussian processing)
 mol_file_name = sys.argv[1]
 scf_file_name = sys.argv[2]
@@ -70,52 +73,57 @@ print 'Mol file: '+ mol_file_name
 print 'SCF file: ' + scf_file_name
 print 'Output folder: ' + output_path
 
-##j_dia_file      = open(''.join([output_path, os.sep, "j_dia.inp"]), 'w')
-##j_para_file     = open(''.join([output_path, os.sep, "j_para.inp"]), 'w')
-##j_total_file    = open(''.join([output_path, os.sep, "j_total.inp"]), 'w')
-##london_file     = open(''.join([output_path, os.sep, "london.inp"]), 'w')
+
 #end of file creation/manipulation module
 
 #write_integrate_dia_file(integrated_dia_file, scf_file, mol_file)
 #THE HANDLING OF THESE FILES WHERE DELEGATED TO THE SPECIFIC CODE
 #integrated_dia_file, integrate_para_file, integrate_total_file,
-#output_files = [j_dia_file, j_para_file, j_total_file, london_file]
 try:
     #assemble input
-    scf = Scf(scf_file)
+    template = Template()
+    scf_file = Scf(template, scf_file)
+
     molecule = Molecule(mol_file)
 
     #assemble output
-    l = write_london(scf, molecule)
-##    write_j_dia(j_dia_file, mol_file)
-##    write_j_para(j_para_file, mol_file)
-##    write_j_total(j_total_file, mol_file)
+    london_text = write_london(template, scf_file, molecule)
 
-    j = J(scf_file, molecule)
-    j.write_j_dia()
-##    j.write_j_para()
-##    j.write_j_total()
-##
-##    integrate = Integrate(output_path, mol_file)
-##    integrate.write_integrate_dia()
-##    integrate.write_integrate_para()
-##    integrate.write_integrate_total()
+    j = J(template, scf_file, molecule)
+    jdia_text = j.write_j_dia(template)
+    jpara_text = j.write_j_para(template)
+    jtotal_text = j.write_j_total(template)
 
+    integrate = Integrate(template, j.scf, molecule)
+    (int_dia_text_1, int_dia_text_2) = integrate.write_integrate_dia()
+    (int_para_text_1, int_para_text_2) = integrate.write_integrate_para()
+    (int_total_text_1, int_total_text_2) = integrate.write_integrate_total()
+
+    j_dia_file      = open(output_path + os.sep + 'j_dia.inp', 'w')
+    j_para_file     = open(output_path + os.sep + 'j_para.inp', 'w')
+    j_total_file    = open(output_path + os.sep + 'j_total.inp', 'w')
+    int_dia_file1   = open(output_path + os.sep + 'integrate_dia_' + integrate.axis_enum[integrate.p_planes[0][0]] + integrate.axis_enum[integrate.p_planes[0][1]] + '.inp', 'w')
+    int_dia_file2   = open(output_path + os.sep + 'integrate_dia_' + integrate.axis_enum[integrate.p_planes[1][0]] + integrate.axis_enum[integrate.p_planes[1][1]] + '.inp', 'w')
+    int_para_file1  = open(output_path + os.sep + 'integrate_para_' + integrate.axis_enum[integrate.p_planes[0][0]] + integrate.axis_enum[integrate.p_planes[0][1]] + '.inp', 'w')
+    int_para_file2  = open(output_path + os.sep + 'integrate_para_' + integrate.axis_enum[integrate.p_planes[1][0]] + integrate.axis_enum[integrate.p_planes[1][1]] + '.inp', 'w')
+    int_total_file1 = open(output_path + os.sep + 'integrate_total_' + integrate.axis_enum[integrate.p_planes[0][0]] + integrate.axis_enum[integrate.p_planes[0][1]] + '.inp', 'w')
+    int_total_file2 = open(output_path + os.sep + 'integrate_total_' + integrate.axis_enum[integrate.p_planes[1][0]] + integrate.axis_enum[integrate.p_planes[1][1]] + '.inp', 'w')
+    london_file     = open(output_path + os.sep + 'london.inp', 'w')
+    output_files = [j_dia_file, j_para_file, j_total_file, int_dia_file1, int_dia_file2, int_para_file1, int_para_file2, int_total_file1, int_total_file2, london_file]
+
+    j_dia_file.write(jdia_text)
+    j_para_file.write(jpara_text)
+    j_total_file.write(jtotal_text)
+    int_dia_file1.write(int_dia_text_1)
+    int_dia_file2.write(int_dia_text_2)
+    int_para_file1.write(int_para_text_1)
+    int_para_file2.write(int_para_text_2)
+    int_total_file1.write(int_total_text_1)
+    int_total_file2.write(int_total_text_2)
+    london_file.write(london_text)
+
+    for file_ in output_files :
+        file_.close()
 except:
     raise
-##    print 'Erro...'
-##    # in the end, close everything
-##    for file_ in output_files :
-##        file_.close()
-##
-##    mol_file.close()
-##    scf_file.close()
-
-##    sys.exit()
-# in the end, close everything
-##for file_ in output_files :
-##    file_.close()
 sys.exit()
-
-def teste():
-    print 'va a puta que pariu'

@@ -13,76 +13,68 @@
 
 import re
 
-#from diracfile import DiracFile
+#from template import Template
 
 class Property:
-##    def main():
-##        pass
-##
-##    if __name__ == '__main__':
-##        main()
-
     def __init__(self, name):
-        self.simple_test()
         self.name = name
         self.values = []
 
-    def simple_test(self):
-        if DiracFile.properties.get(name) == None:
-            raise InvalidName('Property name invalid: '+name)
-
-    def add_values(self, values):
+    def add_values(self, template, values):
         for value in values:
-            self.add_value(value)
+            self.add_value(template, value)
 
-    def add_value(self, value):
-        if re.match(DiracFile.value_pattern, value):
+    def add_value(self, template, value):
+        if template.is_value(value):
             self.values.append(value)
 
     def __str__(self):
-        printable = self.name
-        for i in values:
+        printable = self.name +'\n'
+        for i in self.values:
             printable += i + '\n'
         return printable
+
+    def copy(self):
+        the_copy = Property(self.name)
+        for value in self.values:
+            the_copy.values.append(value)
+        return the_copy
+
 #search the file,
 #if you find a module, instantiate a module
 class Module:#this are the guys with 2* (**)
     def __init__(self, name):
-        if DiracFile.modules.get(name) == None:
-            raise InvalidName('Module name invalid: '+name)
         self.name       = name
         self.submodules = {}
         self.properties = {}
 
-    def add(self, lines):
+    def add(self, template, lines):
         i = 0
         while i < len(lines):
-##            if DiracFile.properties.get(lines[i]):
-
-            if DiracFile.is_property(lines[i]):
+            if template.is_property(lines[i]):
                 name = lines[i]
                 values = []
                 i += 1
-                while i < len(lines) and DiracFile.is_value(lines[i]):
+                while i < len(lines) and template.is_value(lines[i]):
                     values.append(lines[i])
                     i += i
-                self.add_property(name, values)
+                self.add_property(template, name, values)
 
-            elif DiracFile.is_submodule(lines[i]):
+            elif template.is_submodule(lines[i]):
                 name = lines[i]
                 sublines = []
                 i += 1
-                while i < len(lines) and not DiracFile.is_submodule(lines[i]):
+                while i < len(lines) and not template.is_submodule(lines[i]):
                     sublines.append(lines[i])
                     i += 1
-                self.add_submodule(name, sublines)
+                self.add_submodule(template, name, sublines)
             else:
                 i += 1
 
-    def add_submodule(self, name, lines):
-        if not self.contains(name) and self.is_sub(name):
+    def add_submodule(self, template, name, lines):
+        if not self.contains(name) and template.is_submodule(name):
             sub = SubModule(name)
-            sub.add_properties(lines)
+            sub.add_properties(template, lines)
             self.submodules.update({name: sub})
             return sub
         return None
@@ -91,51 +83,48 @@ class Module:#this are the guys with 2* (**)
         return self.properties.__contains__(subname) or self.submodules.__contains__(subname)
 
     def is_sub(self, subname):
-        temp = DiracFile.modules.get(self.name)
+        temp = self.template.modules.get(self.name)
         sub = temp.submodules.get(subname)
         return  sub != None
 
-    def add_property(self, name, values=None):
-        if not self.contains(name) and self.is_prop(name):
+    def add_property(self, template, name, values=[]):
+        if not self.contains(name) and self.is_prop(template, name):
             prop = Property(name)
-            prop.add_values(values)
-            return self.add_property(prop)
+            prop.add_values(template, values)
             self.properties.update({name:prop})
             return prop
         return None
 
-##    def add_property(self, prop):
-##        if not self.contains(prop.name) and self.is_prop(prop.name):
-##            prop = Property(name)
-##            prop.add_values(values)
-##            self.properties.update({prop.name:prop})
-##            return prop
-##        return None
-
-
-    def is_prop(self, subprop):
-        temp = DiracFile.modules.get(self.name)
+    def is_prop(self, template, subprop):
+        temp = template.modules.get(self.name)
         prop = temp.properties.get(subprop)
         return prop != None
 
     def __str__(self):
         printable = self.name + '\n'
-        for i in self.properties:
+        for i in self.properties.itervalues():
             printable += i.__str__()
-        for i in self.submodules:
+        for i in self.submodules.itervalues():
             printable += i.__str__()
         return printable
-##        printable += self.properties.to_string()
-##        printable += self.submodules.to_string()
+
+    def copy(self):
+        the_copy = self.shallow_copy()
+        for prop in self.properties.itervalues():
+            the_copy.properties.update({prop.name:prop.copy()})
+        for sub in self.submodules.itervalues():
+            the_copy.submodules.update({sub.name:sub.copy()})
+        return the_copy
+
+    def shallow_copy(self):
+        return Module(self.name)
 
 class SubModule(Module): #this are the guys with only one *
 
     def __init__(self, name):
-        if DiracFile.submodules.get(name) == None:
-            raise InvalidName('SubModule name invalid: '+name)
         self.name = name
         self.properties = {}
-        self.submodules = None
+        self.submodules = {}
 
     def contains(self, subname):
         return self.properties.__contains__(subname)
@@ -143,22 +132,24 @@ class SubModule(Module): #this are the guys with only one *
     def add_submodule(self, subname):return None #submodules does not have submodules
     def is_sub(self, subname):return False
 
-    def is_prop(self, subprop):
-        temp = DiracFile.submodules.get(self.name)
+    def is_prop(self, template, subprop):
+        temp = template.submodules.get(self.name)
         prop = temp.properties.get(subprop)
         return prop != None
 
-    def add_properties(self, lines):
+    def add_properties(self, template, lines):
         i = 0
         while i < len(lines):
-            if self.is_prop(lines[i]):
+            if self.is_prop(template, lines[i]):
                 name = lines[i]
                 values = []
                 i += 1
-                while i < len(lines) and DiracFile.is_value(lines[i]):
+                while i < len(lines) and template.is_value(lines[i]):
                     values.append(lines[i])
                     i += 1
-                self.add_property(name, values)
+                self.add_property(template, name, values)
             else:
                 i += 1
 
+    def shallow_copy(self):
+        return SubModule(self.name)
