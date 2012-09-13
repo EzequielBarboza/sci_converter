@@ -12,7 +12,7 @@ class Integrate():
         self.visual = self.scf.remove(template.visual.name)
         self.hamiltonian = self.scf.contains(template.hamiltonian.name)
 #remove the .2D - it will be exchanged by the .2D_INT
-        self.visual.properties.pop(template.two_d.name)
+        self.visual.properties.pop(template.two_d.name, None)
 
         self.printable = self.scf.__str__()
 
@@ -73,14 +73,15 @@ class Integrate():
 
     def write_integrate_dia(self) :
         #if we have lvcorr
-        backup_para = self.visual.properties.pop(self.template.j.name)#remove the para information
+        backup_para = self.visual.properties.pop(self.template.j.name, None)#remove the para information
 
         #change the name of the jdia property to j
         if self.hamiltonian.properties.get(self.template.lvcorr.name):
-            backup_dia = visual.properties.pop(self.template.jdia.name)
-            newDia = Property(self.template.j.name)
-            newDia.add_values(self.template, backup_dia.values)
-            self.visual.properties.update({newDia.name:newDia})
+            backup_dia = visual.properties.pop(self.template.jdia.name, None)
+            if backup_dia :
+                newDia = Property(self.template.j.name)
+                newDia.add_values(self.template, backup_dia.values)
+                self.visual.properties.update({newDia.name:newDia})
 
         printable1 = self.printable
         printable1 += self.visual.__str__()
@@ -92,7 +93,7 @@ class Integrate():
         printable2 += self.option2_two_d_int.__str__()
         printable2 += '*END OF\n'
 
-        self.visual.properties.update({backup_para.name:backup_para})#puts the para back where it belongs
+        self.visual.properties.update({self.template.j.name:backup_para})#puts the para back where it belongs
 
         if self.hamiltonian.properties.get(self.template.lvcorr.name):
             self.visual.properties.update({backup_dia.name:backup_dia})
@@ -102,7 +103,7 @@ class Integrate():
     def write_integrate_para(self):
 ##        self.visual = self.scf.contains(self.template.visual.name)
         #remove temporary the dia property
-        backup_dia = self.visual.properties.pop(self.template.jdia.name)
+        backup_dia = self.visual.properties.pop(self.template.jdia.name, None)
         #print the module
         printable1 = self.printable# se essa merda nao copiar a merda da string essa merda de linguagem que va a merda
         printable1 += self.visual.__str__()
@@ -114,13 +115,16 @@ class Integrate():
         printable2 += self.option2_two_d_int.__str__()
         printable2 += '*END OF\n'
         #restore the backup of the dia information
-        self.visual.properties.update({backup_dia.name:backup_dia})
+        self.visual.properties.update({self.template.jdia.name:backup_dia})
 
         return (printable1, printable2)
 
     def write_integrate_total(self):
         if self.hamiltonian.properties.get(self.template.lvcorr.name):
-            backup_jdia = self.visual.properties.pop(self.template.jdia.name)
+            backup_jdia = self.visual.properties.pop(self.template.jdia.name, None)
+
+            if not backup_jdia:return ('','')
+
             backup_jdia.name = 'J'
 
             printable1 = self.printable

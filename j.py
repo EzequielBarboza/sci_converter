@@ -21,7 +21,7 @@ class J:
 
 #and just a piec of the integrals
         integrals = self.scf.contains(template.integrals.name)
-        integrals.submodules.pop(template.twoint.name)
+        integrals.submodules.pop(template.twoint.name, None)
 
 #remove all the rest
         self.scf.modules = [dirac, self.hamiltonian, integrals]
@@ -72,20 +72,21 @@ class J:
     def write_j_dia(self, template):
         #if we have lvcorr
         visual = self.scf.contains(template.visual.name)
-        backup_para = visual.properties.pop(template.j.name)#remove the para information
+        backup_para = visual.properties.pop(template.j.name, None)#remove the para information
 
         #change the name of the jdia property to j
         if self.hamiltonian.properties.get(template.lvcorr.name):
-            backup_dia = visual.properties.pop(template.jdia.name)
-            newDia = Property(template.j.name)
-            newDia.add_values(template, backup_dia.values)
-            visual.properties.update({newDia.name:newDia})
+            backup_dia = visual.properties.pop(template.jdia.name, None)
+            if backup_dia:
+                newDia = Property(template.j.name)
+                newDia.add_values(template, backup_dia.values)
+                visual.properties.update({newDia.name:newDia})
 
         printable = self.printable
         printable += visual.__str__()
         printable += '*END OF\n'
 
-        visual.properties.update({backup_para.name:backup_para})#puts the para back where it belongs
+        visual.properties.update({template.j.name:backup_para})#puts the para back where it belongs
 
         if self.hamiltonian.properties.get(template.lvcorr.name):
             visual.properties.update({backup_dia.name:backup_dia})
@@ -94,13 +95,13 @@ class J:
     def write_j_para(self, template):
         visual = self.scf.contains(template.visual.name)
         #remove temporary the dia property
-        backup_dia = visual.properties.pop(template.jdia.name)
+        backup_dia = visual.properties.pop(template.jdia.name, None)
         #print the module
         printable = self.printable# se essa merda nao copiar a merda da string essa merda de linguagem que va a merda
         printable += visual.__str__()
         printable += '*END OF\n'
         #restore the backup of the dia information
-        visual.properties.update({backup_dia.name:backup_dia})
+        visual.properties.update({template.jdia.name:backup_dia})
 
         return printable
 
@@ -108,15 +109,14 @@ class J:
         if self.hamiltonian.properties.get(template.lvcorr.name):
             visual = self.scf.contains(template.visual.name)
 
-            backup_jdia = visual.properties.pop(template.jdia.name)
+            backup_jdia = visual.properties.pop(template.jdia.name, None)
+
+            if not backup_jdia: return ''
+
             backup_jdia.name = 'J'
-
-##            backup_j_para = visual.properties.pop(template.j.name)
-
             printable = self.printable
             printable += visual.name + '\n'
             printable += backup_jdia.__str__()
-##            printable += backup_j_para.__str__()
             for prop in visual.properties.itervalues():
                 printable += prop.__str__()
             for sub in visual.submodules.itervalues():
