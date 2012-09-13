@@ -15,7 +15,7 @@ def write_london(template, scf, molecule):
     nmr = SubModule('*NMR')
     nmr.add_property(template, '.LONDON')
     nmr.add_property(template, '.DOEPRN')
-    nmr.add_property(template, '.INTFLG', [molecule.symmetry])
+    nmr.add_property(template, '.INTFLG', ['1 1 0'])#calculating just large-large large-small
 
     newModule = Module('**PROPERTIES')
     newModule.add_property(template, '.' + molecule.magnetic_field)

@@ -10,6 +10,10 @@ class Molecule():
     def __init__(self, mol_file):
         self.axis_enum = ['X', 'Y', 'Z']
         self.mol_file = mol_file
+#calculating the perpendicular axis to the molecule
+#go by every atom of the molecule and get the coordinate closest to zero
+#the perpendicular axis to a molecule is found looking at every atom and getting the smallest values
+#the axis with more small values is the winner: it is the perpendicular axis to the molecule
         self.p_axis = self.get_p_axis()
         self.biggest_coordinate = self.get_biggest_coordinate()
         self.symmetry = '0 1 1' if self.p_axis == 'X' else '1 0 1' if self.p_axis == 'Y' else '1 1 0'
