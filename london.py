@@ -8,6 +8,12 @@ from module import Module,Property,SubModule
 #nothing else is been taken from the mol and the scf.inp files
 def write_london(template, scf, molecule):
     printable = ''
+    wave_function = scf.contains(template.wave_function.name)
+    if wave_function:
+        scf_submodule = wave_function.submodules.get(template.scf.name)
+        if scf_submodule:
+            atomst = scf_submodule.properties.pop(template.atomst.name)
+
     for module in scf.modules:
         if module.name != template.visual.name:
             printable += module.__str__()
@@ -23,4 +29,8 @@ def write_london(template, scf, molecule):
 
     printable += newModule.__str__()
     printable += '*END OF\n'
+
+    if atomst:
+        scf_submodule.properties.update({atomst.name:atomst})
+
     return printable

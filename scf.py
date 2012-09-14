@@ -64,7 +64,7 @@ class Scf:
     def remove(self, name):
         for i in range(len(self.modules)):
             if name == self.modules[i].name:
-                return self.modules.pop(i, None)
+                return self.modules.pop(i)
         return None
 
 

@@ -94,6 +94,9 @@ class J:
 
     def write_j_para(self, template):
         visual = self.scf.contains(template.visual.name)
+        #remove .noreortho and nodirect
+        noreortho = visual.properties.pop(template.noreortho.name, None)
+        nodirect = visual.properties.pop(template.nodirect.name, None)
         #remove temporary the dia property
         backup_dia = visual.properties.pop(template.jdia.name, None)
         #print the module
@@ -101,8 +104,12 @@ class J:
         printable += visual.__str__()
         printable += '*END OF\n'
         #restore the backup of the dia information
-        visual.properties.update({template.jdia.name:backup_dia})
-
+        if backup_dia:
+            visual.properties.update({backup_dia.name: backup_dia})
+        if noreortho:
+            visual.properties.update({noreortho.name: noreortho})
+        if nodirect:
+            visual.properties.update({nodirect.name: nodirect})
         return printable
 
     def write_j_total(self, template):

@@ -14,7 +14,9 @@ class Integrate():
 #remove the .2D - it will be exchanged by the .2D_INT
         self.visual.properties.pop(template.two_d.name, None)
 
-        self.printable = self.scf.__str__()
+        self.printable = ''
+        for module in self.scf.modules:
+            self.printable += module.__str__()
 
         self.axis_enum = ['X', 'Y', 'Z']#enumeration of the axis
         # each index in the arrays represent an axis
