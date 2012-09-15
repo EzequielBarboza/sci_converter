@@ -26,7 +26,9 @@ class J:
 #remove all the rest
         self.scf.modules = [dirac, self.hamiltonian, integrals]
 #set the common part to print
-        self.printable = self.scf.__str__()
+        self.printable = ''
+        for module in self.scf.modules:
+            self.printable += module.__str__()
 
 #and the visual, which we have to create. if we dont have visual yet, get it
         self.derive_visual(template)
@@ -120,7 +122,7 @@ class J:
 
             if not backup_jdia: return ''
 
-            backup_jdia.name = 'J'
+            backup_jdia.name = template.j.name
             printable = self.printable
             printable += visual.name + '\n'
             printable += backup_jdia.__str__()
@@ -128,7 +130,8 @@ class J:
                 printable += prop.__str__()
             for sub in visual.submodules.itervalues():
                 printable += sub.__str__()
-
+            printable += '*END OF\n'
+            #restore the name for what it really is
             backup_jdia.name = template.jdia.name
             visual.properties.update({backup_jdia.name:backup_jdia})
             return printable

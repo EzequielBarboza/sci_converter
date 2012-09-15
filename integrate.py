@@ -79,7 +79,7 @@ class Integrate():
 
         #change the name of the jdia property to j
         if self.hamiltonian.properties.get(self.template.lvcorr.name):
-            backup_dia = visual.properties.pop(self.template.jdia.name, None)
+            backup_dia = self.visual.properties.pop(self.template.jdia.name, None)
             if backup_dia :
                 newDia = Property(self.template.j.name)
                 newDia.add_values(self.template, backup_dia.values)
@@ -127,7 +127,7 @@ class Integrate():
 
             if not backup_jdia:return ('','')
 
-            backup_jdia.name = 'J'
+            backup_jdia.name = self.template.j.name
 
             printable1 = self.printable
             printable1 += self.visual.name + '\n'
@@ -149,7 +149,7 @@ class Integrate():
             printable2 += self.option2_two_d_int.__str__()
             printable2 += '*END OF\n'
 
-            backup_jdia.name = template.jdia.name
+            backup_jdia.name = self.template.jdia.name
             self.visual.properties.update({backup_jdia.name:backup_jdia})
             return (printable1, printable2)
 
