@@ -35,10 +35,14 @@ class Template:
         self.scf_prop    = Property('.SCF')
         self.evccnv      = Property('.EVCCNV')
         self.atomst      = Property('.ATOMST')
+        self.closed      = Property('.CLOSED')
+        self.openshell   = Property('.OPEN SHELL')
 
         self.scf = SubModule('*SCF')
         self.scf.properties.update({'.EVCCNV':self.evccnv})
         self.scf.properties.update({'.ATOMST':self.atomst})
+        self.scf.properties.update({'.CLOSED':self.closed})
+        self.scf.properties.update({'.OPEN SHELL':self.openshell})
 
         self.wave_function = Module('**WAVE FUNCTION')
         self.wave_function.properties.update({'.SCF':self.scf_prop})
@@ -89,6 +93,10 @@ class Template:
         self.visual.properties.update({'.LONDON'     :self.london})
         self.visual.properties.update({'.2D'         :self.two_d})
         self.visual.properties.update({'.2D_INT'     :self.two_d_int})
+############ general
+        self.acmout     = Property('.ACMOUT')
+        self.general    = Module('**GENERAL')
+        self.general.properties.update({'.ACMOUT'   :self.acmout})
 
         #valid module names
         self.modules = {   '**HAMILTONIAN'       : self.hamiltonian,
@@ -96,7 +104,8 @@ class Template:
                         '**WAVE FUNCTION'   : self.wave_function,
                         '**INTEGRALS'       : self.integrals,
                         '**PROPERTIES'      : self.prop_module,
-                        '**VISUAL'          : self.visual}
+                        '**VISUAL'          : self.visual,
+                        '**GENERAL'         : self.general}
         #valid submodules names
         self.submodules = {  '*READIN'   :self.readin,
                         '*TWOINT'   :self.twoint,
@@ -111,6 +120,8 @@ class Template:
                         '.INPTEST'      :self.inptest,
                         '.EVCCNV'       :self.evccnv,
                         '.ATOMST'       :self.atomst,
+                        '.CLOSED'       :self.closed,
+                        '.OPEN SHELL'   :self.openshell,
                         '.SCF'          :self.scf_prop,
                         '.UNCONTRACT'   :self.uncontract,
                         '.SCREEN'       :self.screen,
@@ -125,7 +136,8 @@ class Template:
                         '.NOREORTHO'    :self.noreortho,
                         '.NODIRECT'     :self.nodirect,
                         '.2D'           :self.two_d,
-                        '.2D_INT'       :self.two_d_int
+                        '.2D_INT'       :self.two_d_int,
+                        '.ACMOUT'       :self.acmout
                         }
 
     def is_module(self, name):

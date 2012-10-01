@@ -137,6 +137,8 @@ class SubModule(Module): #this are the guys with only one *
         prop = temp.properties.get(subprop)
         return prop != None
 
+    #add one property by parsing a list of strings, the first is the property name
+    #and the others are its values, until another property name is found
     def add_properties(self, template, lines):
         i = 0
         while i < len(lines):
@@ -150,6 +152,13 @@ class SubModule(Module): #this are the guys with only one *
                 self.add_property(template, name, values)
             else:
                 i += 1
+
+    #add one property already created
+    def addProperty(self, template, prop):
+        if not self.contains(prop.name) and self.is_prop(template, prop.name):
+            self.properties.append(prop)
+            return prop
+        return None
 
     def shallow_copy(self):
         return SubModule(self.name)
