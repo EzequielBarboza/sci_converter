@@ -95,6 +95,13 @@ class Module:#this are the guys with 2* (**)
             return prop
         return None
 
+    #add one property already created
+    def addProperty(self, template, prop):
+        if not self.contains(prop.name) and self.is_prop(template, prop.name):
+            self.properties.update({prop.name : prop})
+            return prop
+        return None
+
     def is_prop(self, template, subprop):
         temp = template.modules.get(self.name)
         prop = temp.properties.get(subprop)

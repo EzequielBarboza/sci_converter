@@ -12,7 +12,7 @@ class J:
     def __init__(self, template, scf_original, molecule):# the j files are associated with a molecule
         self.scf = scf_original.copy()
         self.molecule = molecule
-#all we want from **dirac is the name
+#all we want from **dirac is the name - no more
         dirac = self.scf.contains(template.dirac.name)
         dirac.properties.clear()
         dirac.submodules.clear()
@@ -21,12 +21,18 @@ class J:
 
 #and just a piec of the integrals
         integrals = self.scf.contains(template.integrals.name)
-        integrals.submodules.pop(template.twoint.name, None)
+        integrals.submodules.pop(template.twoint.name, None)#don't ask me why... it is just a requirement... :-(
 
-#remove all the rest
-        self.scf.modules = [dirac, self.hamiltonian, integrals]
+#from sp01 ahead, gotta give back the wave_function
+        wave_function = self.scf.contains(template.wave_function.name)
+
+#remove all the rest #dirac,
+        self.scf.modules = [self.hamiltonian, integrals, wave_function]
 #set the common part to print
         self.printable = ''
+        #from sp01 ahead, this shit has to happen..., print dirac separately, because unexplainable, we have to print #.WAVE FUNCTION
+        self.printable += dirac.__str__()
+        self.printable += '#.WAVE FUNCTION\n'
         for module in self.scf.modules:
             self.printable += module.__str__()
 

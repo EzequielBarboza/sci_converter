@@ -13,8 +13,9 @@ class Integrate():
         self.hamiltonian = self.scf.contains(template.hamiltonian.name)
 #remove the .2D - it will be exchanged by the .2D_INT
         self.visual.properties.pop(template.two_d.name, None)
-
-        self.printable = ''
+#from sp01 ahead, we have to do this ugly thing... :-(
+        self.printable = '**DIRAC\n'
+        self.printable += '#.WAVE FUNCTION\n'
         for module in self.scf.modules:
             self.printable += module.__str__()
 
