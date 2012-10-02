@@ -156,7 +156,7 @@ class SubModule(Module): #this are the guys with only one *
     #add one property already created
     def addProperty(self, template, prop):
         if not self.contains(prop.name) and self.is_prop(template, prop.name):
-            self.properties.append(prop)
+            self.properties.update({prop.name : prop})
             return prop
         return None
 

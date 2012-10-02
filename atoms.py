@@ -42,49 +42,12 @@ class Atom():
                         5:32,
                         6:18,
                         7:8}
-    #atomic number(Z) symbol	fancy_name
-    H   = Atom(1,       'H',    'hydrogen'  )
-    He  = Atom(2,       'He',   'helium'    )
-    Li  = Atom(3,       'Li',   'lithium'   )
-    Be  = Atom(4,       'Be',   'beryllium' )
-    B   = Atom(5,       'B',    'boron'     )
-    C   = Atom(6,       'C',    'carbon'    )
-    N   = Atom(7,       'N',    'nitrogen'  )
-    O   = Atom(8,       'O',    'oxygen' )
-    F   = Atom(9,       'F',    'fluorine' )
-    Ne  = Atom(10, 'Ne', 'neon' )
-    Na  = Atom(11, 'Na', 'sodim' )
-    Mg  = Atom(12, 'Mg', 'magnesium' )
-    Al  = Atom(13, 'Al', 'aluminum' )
-    Si  = Atom(14, 'Si', 'silicon' )
-    P   = Atom(15, 'P', 'phosphorus' )
-    S   = Atom(16, 'S', 'sulfur' )
-    Cl  = Atom(17, 'Cl', 'chlorine' )
-    Ar  = Atom(18, 'Ar', 'argon' )
-    K   = Atom(19, 'K', 'potassium' )
-    Ca  = Atom(20, 'Ca', 'calcium' )
-    Sc  = Atom(21, 'Sc', 'scandium' )
-    Ti  = Atom(22, 'Ti', 'titanium' )
-    V   = Atom(23, 'V', 'vanadium' )
-    Cr  = Atom(24, 'Cr', 'chromium' )
-    Mn  = Atom(25, 'Mn', 'manganese' )
-    Fe  = Atom(26, 'Fe', 'iron' )
-    Co  = Atom(27, 'Co', 'cobalt' )
-    Ni  = Atom(28, 'Ni', 'nickel' )
-    Cu  = Atom(29, 'Cu', 'copper' )
-    Zn  = Atom(30, 'Zn', 'zinc' )
-    Ga  = Atom(31, 'Ga', 'gallium' )
-    Ge  = Atom(32, 'Ge', 'germanium' )
-    As  = Atom(33, 'As', 'arsenic' )
-    Se  = Atom(34, 'Se', 'selenium' )
-    Br  = Atom(35, 'Br', 'bromine' )
-    Kr  = Atom(36, 'Kr', 'krypton' )
-
 
     def __init__(self, z, symbol, fancy_name):
         self.z = z
         self.symbol = symbol
         self.fancy_name = fancy_name
+        (self.cs, self.os) = self.get_shells()
 ##        self.cs = cs
 ##        self.os = os
 
@@ -97,26 +60,23 @@ class Atom():
             if scf_submodule:
                 atomst = scf_submodule.properties.get(template.atomst.name)
                 if atomst:
-                    scf_submodule.remove(atomst.name)
+                    scf_submodule.properties.pop(atomst.name)
                 else: return ''
             else: return ''
         else: return ''
 
-        (cs, os) = self.get_shells()
-
         #copy the new components from the template. They are going to be improved
-        closed_shell = template.properties.closed.copy()
-        closed_shell.add_value(template, ' '.join(map(str, cs)))
+        closed_shell = template.closed.copy()
+        closed_shell.add_value(template, ' '.join(map(str, self.cs)))
         scf_submodule.addProperty(template, closed_shell)
 
-        if os[0] > 0:
-            open_shell = template.properties.openshell.copy()
-            open_shell.add_value(str(os[0]))
-            open_shell.add_value(str(os[1]))
-            open_shell.add_value(' '.join(map(str, os[2])))
+        if self.os[0] > 0:
+            open_shell = template.openshell.copy()
+            open_shell.add_value(template, str(self.os[0]))
+            open_shell.add_value(template, str(self.os[1]) + '/' + ','.join(map(str, self.os[2])))
             scf_submodule.addProperty(template, open_shell)
 
-        general = template.modules.general.copy()
+        general = template.general.copy()
 
         #add the newly crated components to the atomfile
         atom_file.addModule(general)
@@ -133,7 +93,7 @@ class Atom():
         closed = [0, 0]
         open_shell = [0, 0, [0, 0]]
         while remainder > 0:
-            layer, _type, capacity = pauling[index]
+            layer, _type, capacity = Atom.pauling[index]
             #initializes the number of eletrons entering this orbital
             entering = remainder
             #extracts all that does not fit, due to capacity
@@ -144,12 +104,12 @@ class Atom():
                 entering -= remainder
 
             if remainder >= 0:
-                if _type == t_g:
+                if _type == Atom.t_g:
                     closed[0] += entering
                 else:
                     closed[1] += entering
             else:
-                if _type == t_g:
+                if _type == Atom.t_g:
                     open_shell = [1, entering, [capacity, 0]]
                 else:
                     open_shell = [1, entering, [0, capacity]]
@@ -161,9 +121,9 @@ class Atom():
         printable += '\n'
         printable += self.fancy_name + ' atom'
         printable += '\n'
-        printable += 'C 1'
+        printable += 'C     1'
         printable += '\n'
-        printable += str(self.z) + '.' + '1'
+        printable += '      ' + str(self.z) + '.' + '   1'
         printable += '\n'
         printable += self.symbol + '    0.000000000 0.000000000 0.000000000'
         printable += '\n'

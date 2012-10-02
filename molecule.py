@@ -24,7 +24,7 @@
 
 
 from commons        import  is_number
-from atoms          import  Atoms
+from atoms          import  Atom
 from periodic_table import  periodic_table
 
 #keep information that can be retrieved from a mol file
@@ -98,7 +98,6 @@ class Molecule():
                 z = abs(float(line.split()[3])) if is_number(line.split()[3])else ""
                 if x == "" or y == "" or z == "" :#do not compute invalid lines
                     continue
-            else:
                 atom = periodic_table.get(line.split()[0])
                 if atom and not atom in atoms:
                     atoms.append(atom)

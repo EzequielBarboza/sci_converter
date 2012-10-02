@@ -16,14 +16,15 @@ import string
 import os
 import shutil
 
-from london     import write_london
-from j          import J
-from integrate  import Integrate
-from molecule   import Molecule
-from scf        import Scf
-from template   import Template
-from module     import Module
-from job        import Job
+from london         import write_london
+from j              import J
+from integrate      import Integrate
+from molecule       import Molecule
+from scf            import Scf
+from template       import Template
+from module         import Module
+from job            import Job
+from periodic_table import periodic_table
 
 #log_file = sys.argv[1] #soon we will be receiving the .log file (output from a gaussian processing)
 mol_file_name = sys.argv[1]
@@ -83,21 +84,27 @@ try:
     template = Template()
     scf_file = Scf(template, scf_file)
 
+#print the description of each atom
     molecule = Molecule(mol_file)
+    for atom in molecule.atoms:
+        atom.print_mol_file(periodic_table, scf_file, template, output_path)
+        atom.print_inp_file(output_path)
 
-    #assemble output
+#assemble output of the main files
+    #1.london
     london_text = write_london(template, scf_file, molecule)
-
+    #2.j
     j = J(template, scf_file, molecule)
     jdia_text = j.write_j_dia(template)
     jpara_text = j.write_j_para(template)
     jtotal_text = j.write_j_total(template)
-
+    #3.integrate
     integrate = Integrate(template, j.scf, molecule)
     (int_dia_text_1, int_dia_text_2) = integrate.write_integrate_dia()
     (int_para_text_1, int_para_text_2) = integrate.write_integrate_para()
     (int_total_text_1, int_total_text_2) = integrate.write_integrate_total()
 
+#open output the files
     j_dia_file      = open(output_path + os.sep + 'j_dia.inp', 'w')
     j_para_file     = open(output_path + os.sep + 'j_para.inp', 'w')
     j_total_file    = open(output_path + os.sep + 'j_total.inp', 'w')
@@ -108,14 +115,13 @@ try:
     int_total_file1 = open(output_path + os.sep + 'integrate_total_' + integrate.axis_enum[integrate.p_planes[0][0]] + integrate.axis_enum[integrate.p_planes[0][1]] + '.inp', 'w')
     int_total_file2 = open(output_path + os.sep + 'integrate_total_' + integrate.axis_enum[integrate.p_planes[1][0]] + integrate.axis_enum[integrate.p_planes[1][1]] + '.inp', 'w')
     london_file     = open(output_path + os.sep + 'london.inp', 'w')
-    output_files = [london_file, j_dia_file, j_para_file, j_total_file, int_dia_file1, int_para_file1, int_total_file1, int_dia_file2, int_para_file2 , int_total_file2]
+    job_file        = open(output_path + os.sep + 'job.sub', 'w')
+    output_files = [london_file, j_dia_file, j_para_file, j_total_file, int_dia_file1, int_para_file1, int_total_file1, int_dia_file2, int_para_file2 , int_total_file2, job_file]
 
-# creation of the job script, after all the processing is done
-    job = Job(scf_file_name, mol_file_name, output_files)
-    job_file        = open(output_path + os.sep + 'job.sub', w)
-    job_text        = job_file.write(job.write_job())
-#
-# creation of the atoms files
+    #4.job
+    job         = Job(scf_file_name, mol_file_name, output_files, molecule)
+    job_text    = job.write_job()
+
     j_dia_file.write(jdia_text)
     j_para_file.write(jpara_text)
     j_total_file.write(jtotal_text)
@@ -126,6 +132,7 @@ try:
     int_total_file1.write(int_total_text_1)
     int_total_file2.write(int_total_text_2)
     london_file.write(london_text)
+    job_file.write(job_text)
 
     for file_ in output_files :
         file_.close()
