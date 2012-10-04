@@ -87,8 +87,8 @@ try:
 #print the description of each atom
     molecule = Molecule(mol_file)
     for atom in molecule.atoms:
-        atom.print_mol_file(periodic_table, scf_file, template, output_path)
-        atom.print_inp_file(output_path)
+        atom.print_mol_file(output_path)
+        atom.print_inp_file(periodic_table, scf_file, template, output_path)
 
 #assemble output of the main files
     #1.london
