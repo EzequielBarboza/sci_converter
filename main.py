@@ -93,7 +93,7 @@ try:
 #assemble output of the main files
     #1.london
     london_text = write_london(template, scf_file, molecule)
-    #2.j
+    #2.j the processed j file will be passed to the integrate
     j = J(template, scf_file, molecule)
     jdia_text = j.write_j_dia(template)
     jpara_text = j.write_j_para(template)
@@ -119,7 +119,7 @@ try:
     output_files = [london_file, j_dia_file, j_para_file, j_total_file, int_dia_file1, int_para_file1, int_total_file1, int_dia_file2, int_para_file2 , int_total_file2, job_file]
 
     #4.job
-    job         = Job(scf_file_name, mol_file_name, output_files, molecule)
+    job         = Job(scf_file_name, mol_file_name, output_files, molecule, j.lvcorr)
     job_text    = job.write_job()
 
     j_dia_file.write(jdia_text)

@@ -107,6 +107,10 @@ class Integrate():
 ##        self.visual = self.scf.contains(self.template.visual.name)
         #remove temporary the dia property
         backup_dia = self.visual.properties.pop(self.template.jdia.name, None)
+        #remove the noreortho and nodirect: it is information just for the dia
+        backup_noreortho   = self.visual.properties.pop(self.template.noreortho.name, None)
+        backup_nodirect    = self.visual.properties.pop(self.template.nodirect.name, None)
+
         #print the module
         printable1 = self.printable# se essa merda nao copiar a merda da string essa merda de linguagem que va a merda
         printable1 += self.visual.__str__()
@@ -119,6 +123,12 @@ class Integrate():
         printable2 += '*END OF\n'
         #restore the backup of the dia information
         self.visual.properties.update({self.template.jdia.name:backup_dia})
+
+        if backup_nodirect:
+            self.visual.properties.update({backup_nodirect.name:backup_nodirect})
+
+        if backup_noreortho:
+            self.visual.properties.update({backup_noreortho.name:backup_noreortho})
 
         return (printable1, printable2)
 

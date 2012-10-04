@@ -18,13 +18,20 @@ class J:
         dirac.submodules.clear()
 #we want all the self.hamiltonian
         self.hamiltonian = self.scf.contains(template.hamiltonian.name)
+#this is used to control whether the job.sub will print all the information for j_total and integrate_total
+        self.lvcorr = self.hamiltonian.properties.has_key(template.lvcorr.name)
 
 #and just a piec of the integrals
         integrals = self.scf.contains(template.integrals.name)
-        integrals.submodules.pop(template.twoint.name, None)#don't ask me why... it is just a requirement... :-(
+        if integrals:
+            integrals.submodules.pop(template.twoint.name, None)#don't ask me why... it is just a requirement... :-(
 
-#from sp01 ahead, gotta give back the wave_function
+#from sp01 ahead, gotta give back the wave_function, but with just some properties
         wave_function = self.scf.contains(template.wave_function.name)
+        if wave_function:
+            wave_function.properties.clear()
+            wave_function.submodules.clear()
+            wave_function.properties.update({template.scf_prop.name:template.scf_prop})
 
 #remove all the rest #dirac,
         self.scf.modules = [self.hamiltonian, integrals, wave_function]

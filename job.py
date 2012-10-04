@@ -10,19 +10,21 @@
 # Copyright:   (c) ezequiel 2012
 # Licence:     GPL
 #-------------------------------------------------------------------------------
+import os
 
 class Job():
-    def __init__(self, scf_file_name, mol_file_name, output_files, molecule):
-        self.scf_file_name      = scf_file_name
-        self.mol_file_name      = mol_file_name
-        self.london_file_name   = output_files[0].name
-        self.j_dia_file         = output_files[1].name
-        self.j_para_file        = output_files[2].name
-        self.j_total_file       = output_files[3].name
-        self.int_dia_file       = output_files[4].name
-        self.int_para_file      = output_files[5].name
-        self.int_total_file     = output_files[6].name
+    def __init__(self, scf_file_name, mol_file_name, output_files, molecule, lvcorr):
+        self.scf_file_name      = scf_file_name.rsplit(os.sep)[-1]
+        self.mol_file_name      = mol_file_name.rsplit(os.sep)[-1]
+        self.london_file_name   = output_files[0].name.rsplit(os.sep)[-1]
+        self.j_dia_file         = output_files[1].name.rsplit(os.sep)[-1]
+        self.j_para_file        = output_files[2].name.rsplit(os.sep)[-1]
+        self.j_total_file       = output_files[3].name.rsplit(os.sep)[-1]
+        self.int_dia_file       = output_files[4].name.rsplit(os.sep)[-1]
+        self.int_para_file      = output_files[5].name.rsplit(os.sep)[-1]
+        self.int_total_file     = output_files[6].name.rsplit(os.sep)[-1]
         self.molecule           = molecule
+        self.lvcorr             = lvcorr
 
     def write_job(self):
 #print the #atomic start
@@ -75,30 +77,28 @@ class Job():
         printable += ' --inp=' + self.j_para_file
         printable += ' --mol=' + self.mol_file_name
         printable += ' --get="plot.2d.vector"'
-        printable += ' --put="DFCOEF PAMXVC TBMO"'
-        printable += '\n'
-        printable += 'cp plot.2d.vector plot.2d.vector.para'
-        printable += '\n'
-        printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
-        printable += ' --inp=' + self.j_total_file
-        printable += ' --mol=' + self.mol_file_name
-        printable += ' --get="plot.2d.vector" --put="DFCOEF PAMXVC TBMO"'
-        printable += 'cp plot.2d.vector plot.2d.vector.total'
-        printable += '\n'
+        printable += ' --put="DFCOEF PAMXVC TBMO"\n'
+        printable += 'cp plot.2d.vector plot.2d.vector.para\n'
+        if self.lvcorr:
+            printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
+            printable += ' --inp=' + self.j_total_file
+            printable += ' --mol=' + self.mol_file_name
+            printable += ' --get="plot.2d.vector" --put="DFCOEF PAMXVC TBMO"\n'
+            printable += 'cp plot.2d.vector plot.2d.vector.total\n'
+
 #print the #integration
         printable += '\n#integration\n\n'
-        printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
-        printable += ' --inp=' + self.int_total_file
-        printable += ' --mol=' + self.mol_file_name
-        printable += ' --put="DFCOEF PAMXVC TBMO"'
-        printable += '\n'
+        if self.lvcorr:
+            printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
+            printable += ' --inp=' + self.int_total_file
+            printable += ' --mol=' + self.mol_file_name
+            printable += ' --put="DFCOEF PAMXVC TBMO"\n'
         printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
         printable += ' --inp=' + self.int_para_file
         printable += ' --mol=' + self.mol_file_name
-        printable += ' --put="DFCOEF PAMXVC TBMO"'
-        printable += '\n'
+        printable += ' --put="DFCOEF PAMXVC TBMO"\n'
         printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
         printable += ' --inp=' + self.int_dia_file
         printable += ' --mol=' + self.mol_file_name
-        printable += ' --put="DFCOEF PAMXVC TBMO"'
+        printable += ' --put="DFCOEF PAMXVC TBMO"\n'
         return printable
