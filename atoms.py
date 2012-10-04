@@ -51,7 +51,7 @@ class Atom():
 ##        self.cs = cs
 ##        self.os = os
 
-    def print_mol_file(self, periodic_table, scf_file, template, output_path):
+    def print_inp_file(self, periodic_table, scf_file, template, output_path):
         atom_file = scf_file.copy()
         wave_function = atom_file.contains(template.wave_function.name)
 
@@ -83,7 +83,7 @@ class Atom():
         #get the string representation of the atom
         printable = atom_file.__str__()
         #print to the output
-        output_file = open(output_path + os.sep + self.symbol.lower() + '.mol', 'w')
+        output_file = open(output_path + os.sep + self.symbol.lower() + '.inp', 'w')
         output_file.write(printable)
         output_file.close()
 
@@ -116,10 +116,10 @@ class Atom():
             index += 1
         return (closed, open_shell)
 
-    def print_inp_file(self, output_path):
+    def print_atom_file(self, output_path):
         printable = 'DIRAC'
         printable += '\n'
-        printable += self.fancy_name + ' atom'
+        printable += self.fancy_name + ' atom\n'
         printable += '\n'
         printable += 'C     1'
         printable += '\n'
@@ -131,7 +131,7 @@ class Atom():
         printable += '\n'
         printable += 'FINISH'
         #print to the output
-        output_file = open(output_path + os.sep + self.symbol.lower() + '.inp', 'w')
+        output_file = open(output_path + os.sep + self.symbol.lower() + '.mol', 'w')
         output_file.write(printable)
         output_file.close()
 
