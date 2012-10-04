@@ -116,7 +116,7 @@ class Atom():
             index += 1
         return (closed, open_shell)
 
-    def print_atom_file(self, output_path):
+    def print_mol_file(self, output_path):
         printable = 'DIRAC'
         printable += '\n'
         printable += self.fancy_name + ' atom\n'
