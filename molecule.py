@@ -21,7 +21,7 @@
 # Copyright:   (c) ezequiel.barboza 2012
 # Licence:     GPL
 #-------------------------------------------------------------------------------
-
+import re
 
 from commons        import  is_number
 from atoms          import  Atom
@@ -29,6 +29,7 @@ from periodic_table import  periodic_table
 
 #keep information that can be retrieved from a mol file
 class Molecule():
+    basis_pattern = re.compile('.+ BASIS .+')
     #the molecule is a file in a format given in the specifications
     #this file gives us a set of properties, which are extracted using the below routines
     def __init__(self, mol_file):
@@ -101,7 +102,7 @@ class Molecule():
                 atom = periodic_table.get(line.split()[0])
                 if atom and not atom in atoms:
                     atoms.append(atom)
-##                if Atoms.atoms.get(atom):
-##                    if not atom in self.atoms:
-##                        self.atoms.append(atom)
+            elif re.match(self.basis_pattern, line):
+                if len(atoms) != 0 and len(atoms[-1].basis) == 0:
+                    atoms[-1].basis = line.strip()
         return atoms

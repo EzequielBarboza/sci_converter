@@ -28,20 +28,24 @@ class Job():
 
     def write_job(self):
 #print the #atomic start
-        printable = '\n#atomic start\n\n'
+        printable = '#atomic start\n\n'
         for atom in self.molecule.atoms:
             printable += 'pam --mpi=8 --global-scratch-disk --noarch --mb=1200'
             printable += ' --inp=' + atom.symbol.lower() + '.inp'
             printable += ' --mol=' + atom.symbol.lower() + '.mol'
-            printable += ' --get="DFACMO"'
-            printable += '\n'
-            symbol = (atom.symbol + '_') if len(atom.symbol) < 2 else atom.symbol
-            printable += 'cp DFACMO ' +  symbol  + 'COEF'
-            printable += '\n'
-        printable += '\n'#end the previous section
+            printable += ' --get="DFACMO"\n'
+            printable += 'cp DFACMO ' +  atom.symbol  + '_COEF\n'
 #print the #scf
         printable += '\n#scf\n\n'
         printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
+
+        #print the COEFS for every atom
+        printable += ' --put="'
+        for atom in self.molecule.atoms:
+            printable += atom.symbol + '_COEF '#C_COEF H_COEF Br_COEF"
+        printable = printable.strip()
+        printable += '" '
+
         printable += ' --inp=' + self.scf_file_name
         printable += ' --mol=' + self.mol_file_name
         printable += ' --get="DFCOEF PAMXVC TBMO"'

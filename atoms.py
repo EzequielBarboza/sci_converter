@@ -48,8 +48,7 @@ class Atom():
         self.symbol = symbol
         self.fancy_name = fancy_name
         (self.cs, self.os) = self.get_shells()
-##        self.cs = cs
-##        self.os = os
+        self.basis = ''
 
     def print_inp_file(self, periodic_table, scf_file, template, output_path):
         atom_file = scf_file.copy()
@@ -117,19 +116,16 @@ class Atom():
         return (closed, open_shell)
 
     def print_mol_file(self, output_path):
-        printable = 'DIRAC'
-        printable += '\n'
+        printable = 'DIRAC\n'
         printable += self.fancy_name + ' atom\n'
         printable += '\n'
-        printable += 'C     1'
-        printable += '\n'
-        printable += '      ' + str(self.z) + '.' + '   1'
-        printable += '\n'
-        printable += self.symbol + '    0.000000000 0.000000000 0.000000000'
-        printable += '\n'
-        printable += 'LARGE BASIS cc-pVDZ'
-        printable += '\n'
-        printable += 'FINISH'
+        #the spaces are important
+        printable += 'C   1              A\n'
+        printable += '      ' + str(self.z) + '.' + '   1\n'
+        #the number of spaces are important
+        printable += self.symbol + '        0.000000000      0.000000000      0.000000000\n'
+        printable += self.basis + '\n'
+        printable += 'FINISH\n'
         #print to the output
         output_file = open(output_path + os.sep + self.symbol.lower() + '.mol', 'w')
         output_file.write(printable)
