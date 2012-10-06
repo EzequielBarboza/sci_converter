@@ -34,7 +34,7 @@ class Job():
             printable += ' --inp=' + atom.symbol.lower() + '.inp'
             printable += ' --mol=' + atom.symbol.lower() + '.mol'
             printable += ' --get="DFACMO"\n'
-            printable += 'cp DFACMO ' +  atom.symbol  + '_COEF\n'
+            printable += 'cp DFACMO ' + atom.coef + '\n'
 #print the #scf
         printable += '\n#scf\n\n'
         printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
@@ -42,7 +42,7 @@ class Job():
         #print the COEFS for every atom
         printable += ' --put="'
         for atom in self.molecule.atoms:
-            printable += atom.symbol + '_COEF '#C_COEF H_COEF Br_COEF"
+            printable += atom.coef + ' '
         printable = printable.strip()
         printable += '" '
 

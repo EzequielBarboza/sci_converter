@@ -49,6 +49,8 @@ class Atom():
         self.fancy_name = fancy_name
         (self.cs, self.os) = self.get_shells()
         self.basis = ''
+        self.coef  = (self.symbol + '_') if len(self.symbol) < 2 else self.symbol
+        self.coef += 'COEF'
 
     def print_inp_file(self, periodic_table, scf_file, template, output_path):
         atom_file = scf_file.copy()
