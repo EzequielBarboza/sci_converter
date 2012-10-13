@@ -51,10 +51,16 @@ class Atom():
         self.basis = ''
         self.coef  = (self.symbol + '_') if len(self.symbol) < 2 else self.symbol
         self.coef += 'COEF'
+        #if there are closed shell, add one to the type of orbitals
+        self.types_of_layers = 1 if (self.cs[0] > 0 or self.cs[1] > 0) else 0
+        #if there are open shell, add one to the type of orbitals
+        if self.os[0] > 0:
+            self.types_of_layers += 1
 
+    #prints out the inp representation of this atom
     def print_inp_file(self, periodic_table, scf_file, template, output_path):
-        atom_file = scf_file.copy()
-        wave_function = atom_file.contains(template.wave_function.name)
+        inp_file = scf_file.copy()
+        wave_function = inp_file.contains(template.wave_function.name)
 
         if  wave_function:
             scf_submodule = wave_function.submodules.get(template.scf.name)
@@ -68,7 +74,7 @@ class Atom():
 
         #copy the new components from the template. They are going to be improved
         closed_shell = template.closed.copy()
-        closed_shell.add_value(template, ' '.join(map(str, self.cs)))
+        closed_shell.add_value(template, ' '.join(map(str, self.cs[0:2])))
         scf_submodule.addProperty(template, closed_shell)
 
         if self.os[0] > 0:
@@ -80,9 +86,9 @@ class Atom():
         general = template.general.copy()
 
         #add the newly crated components to the atomfile
-        atom_file.addModule(general)
-        #get the string representation of the atom
-        printable = atom_file.__str__()
+        inp_file.addModule(general)
+        #get the string representation of the atom#in this case, is a representation of the modules that this atom contains# do not mistake with the atom itself
+        printable = inp_file.__str__()
         #print to the output
         output_file = open(output_path + os.sep + self.symbol.lower() + '.inp', 'w')
         output_file.write(printable)
@@ -91,8 +97,10 @@ class Atom():
     def get_shells(self):
         remainder = self.z
         index = 0
-        closed = [0, 0]
-        open_shell = [0, 0, [0, 0]]
+        #[gerade, ungerade, acumulator for the number of orbitals closed, whole capacity allocated(same as summation of 0 and 1 indexes]
+        closed = [0, 0, 0, 0]
+        #[#of openshells, #of eletrons on the openshells,[capacity of the gerade, capacity of the ungerade], acumulator for the capacity]
+        open_shell = [0, 0, [0, 0], 0]
         while remainder > 0:
             layer, _type, capacity = Atom.pauling[index]
             #initializes the number of eletrons entering this orbital
@@ -101,22 +109,28 @@ class Atom():
             remainder -= capacity
 
             #adjusts the remainder if all entered
+            ## REMEMBER!!! it is just an adjustment, doesn't have nothing to do with the next if/else
             if remainder > 0:
                 entering -= remainder
-
+            #if there is already something to be calculated, something is closed
             if remainder >= 0:
+                #increments the number of orbitals closed for this atoms(orbitals totally filled)
+                closed[2] += 1
+                #increments the capacity (it is a property of each orbital)
+                closed[3] += capacity
                 if _type == Atom.t_g:
                     closed[0] += entering
                 else:
                     closed[1] += entering
             else:
                 if _type == Atom.t_g:
-                    open_shell = [1, entering, [capacity, 0]]
+                    open_shell = [1, entering, [capacity, 0], (open_shell[3]+capacity)]
                 else:
-                    open_shell = [1, entering, [0, capacity]]
+                    open_shell = [1, entering, [0, capacity], (open_shell[3]+capacity)]
             index += 1
         return (closed, open_shell)
 
+    # prints out the mol representation of this atom
     def print_mol_file(self, output_path):
         printable = 'DIRAC\n'
         printable += self.fancy_name + ' atom\n'
@@ -133,7 +147,33 @@ class Atom():
         output_file.write(printable)
         output_file.close()
 
-
+    def __str__(self):
+        printable = self.coef + ' ' + str(self.types_of_layers) + '\n'
+        # first the closed, if they exist
+        number_of_closed_orbitals = 0
+        if self.cs[3] > 0:#just if there is any closed orbitals
+            #print the layers
+            number_of_closed_orbitals = self.cs[3] / 2 #dont know why the hell it is calculated this bloody way
+            if number_of_closed_orbitals > 1:#if there is more than 1 closed orbital, then gotta print from 1..n
+                printable += '1..' + str(number_of_closed_orbitals)
+            else:
+                printable += '1'
+            printable += '\n'
+            printable += str(float(self.cs[0] + self.cs[1]) / self.cs[3]) #ocupation = lotacao / capacidade#in the end will always be ONE
+        # then the opened
+        if self.os[3] > 0:
+            #depends on whether I want to consider the closed (they might not exist)
+            number_of_open_orbitals = self.os[3] / 2
+            if number_of_closed_orbitals > 0 :
+                printable += '\n'
+                printable += str(number_of_closed_orbitals + 1) + '..' + str(number_of_closed_orbitals + number_of_open_orbitals)
+            elif number_of_open_orbitals > 1:
+                printable += '1..' + str(number_of_open_orbitals)
+            else:
+                printable += '1'
+            printable += '\n'
+            printable += str(float(self.os[1]) / self.os[3]) #ocupation = lotacao / capacidade#in the end will always be ONE
+        return printable
 
 
 

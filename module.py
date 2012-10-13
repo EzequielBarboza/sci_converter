@@ -12,13 +12,16 @@
 #-------------------------------------------------------------------------------
 
 import re
+from atoms import Atom
 
 #from template import Template
 
+#one property may contain values. The values can be atoms, strings, or numbers
 class Property:
     def __init__(self, name):
         self.name = name
         self.values = []
+        self.template = None
 
     def add_values(self, template, values):
         for value in values:
@@ -28,10 +31,18 @@ class Property:
         if template.is_value(value):
             self.values.append(value)
 
+    #allow us to handle the .ATOMST property, which does not have simple values (string/numbers/nothing) but has composed values (atoms)
+    def addAtomAsValue(self, template, atom):
+        if not isinstance(atom, Atom) : return None
+        if self.name != template.atomst.name : return None
+        for value in self.values:
+            if isinstance(value, Atom) and value.symbol == atom.symbol : return None
+        self.values.append(atom)
+
     def __str__(self):
         printable = self.name +'\n'
         for i in self.values:
-            printable += i + '\n'
+            printable += i.__str__() + '\n'
         return printable
 
     def copy(self):
@@ -81,6 +92,14 @@ class Module:#this are the guys with 2* (**)
 
     def contains(self, subname):
         return self.properties.__contains__(subname) or self.submodules.__contains__(subname)
+
+    #search for the submodule, return if it does exists in this module return it
+    def getSubmodule(self, submodule):
+        if not isinstance(submodule, SubModule) : return None
+        for sm in self.submodules.itervalues():
+            if sm.name == submodule.name:
+                return sm
+        return None
 
     def is_sub(self, subname):
         temp = self.template.modules.get(self.name)
@@ -135,6 +154,11 @@ class SubModule(Module): #this are the guys with only one *
 
     def contains(self, subname):
         return self.properties.__contains__(subname)
+    def getProperty(self, prop):
+        if not isinstance(prop, Property) : return None
+        for p in self.properties.itervalues():
+            if p.name == prop.name : return p
+        return None
 
     def add_submodule(self, subname):return None #submodules does not have submodules
     def is_sub(self, subname):return False

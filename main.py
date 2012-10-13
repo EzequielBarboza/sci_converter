@@ -2,7 +2,7 @@
 #-------------------------------------------------------------------------------
 # Name:        module1
 # Purpose: use a previously written program that processes the output of gaussian
-# turning it into a
+# turning it into a set of dirac input files
 #
 # Author:      ezequiel.barboza
 #
@@ -35,7 +35,7 @@ mol_file = map(string.strip, f.readlines())
 f.close()
 
 f = open(scf_file_name, 'r')
-scf_file = map(string.strip, f.readlines())
+scf_file_input = map(string.strip, f.readlines())
 f.close()
 
 #this guy is wrapping the call to the existing library cris_utility that have the ability to generate the xyz
@@ -65,8 +65,9 @@ os.mkdir(output_path)
 mol_file_copy = output_path + os.sep + os.path.basename(mol_file_name)
 shutil.copy2(mol_file_name, mol_file_copy)
 
-scf_file_copy = output_path + os.sep + os.path.basename(scf_file_name)
-shutil.copy2(scf_file_name, scf_file_copy)
+#the scf file is not been copied anymore. Instead, there is processing to be done over it
+#scf_file_copy = output_path + os.sep + os.path.basename(scf_file_name)
+#shutil.copy2(scf_file_name, scf_file_copy)
 
 print 'Working on the following files'
 print 'Mol file: '+ mol_file_name
@@ -76,25 +77,26 @@ print 'Output folder: ' + output_path
 
 #end of file creation/manipulation module
 
-#write_integrate_dia_file(integrated_dia_file, scf_file, mol_file)
+#write_integrate_dia_file(integrated_dia_file, scf_file_input, mol_file)
 #THE HANDLING OF THESE FILES WHERE DELEGATED TO THE SPECIFIC CODE
 #integrated_dia_file, integrate_para_file, integrate_total_file,
 try:
     #assemble input
+    #the template should be static, as the periodic table
     template = Template()
-    scf_file = Scf(template, scf_file)
+    molecule = Molecule(mol_file)
+    scf_file_output = Scf(template, scf_file_input, molecule.atoms)
 
 #print the description of each atom
-    molecule = Molecule(mol_file)
     for atom in molecule.atoms:
         atom.print_mol_file(output_path)
-        atom.print_inp_file(periodic_table, scf_file, template, output_path)
+        atom.print_inp_file(periodic_table, scf_file_output, template, output_path)
 
 #assemble output of the main files
     #1.london
-    london_text = write_london(template, scf_file, molecule)
+    london_text = write_london(template, scf_file_output, molecule)
     #2.j the processed j file will be passed to the integrate
-    j = J(template, scf_file, molecule)
+    j = J(template, scf_file_output, molecule)
     jdia_text = j.write_j_dia(template)
     jpara_text = j.write_j_para(template)
     jtotal_text = j.write_j_total(template)
@@ -104,7 +106,11 @@ try:
     (int_para_text_1, int_para_text_2) = integrate.write_integrate_para()
     (int_total_text_1, int_total_text_2) = integrate.write_integrate_total()
 
+    #4.print the modified scf file
+    scf_text = scf_file_output.__str__()
+
 #open output the files
+    scf_file        = open(output_path + os.sep + scf_file_name.rsplit(os.sep)[-1], 'w')#pay attention: the scf_file_output has the same name parsed when creting the job file
     j_dia_file      = open(output_path + os.sep + 'j_dia.inp', 'w')
     j_para_file     = open(output_path + os.sep + 'j_para.inp', 'w')
     j_total_file    = open(output_path + os.sep + 'j_total.inp', 'w')
@@ -116,12 +122,13 @@ try:
     int_total_file2 = open(output_path + os.sep + 'integrate_total_' + integrate.axis_enum[integrate.p_planes[1][0]] + integrate.axis_enum[integrate.p_planes[1][1]] + '.inp', 'w')
     london_file     = open(output_path + os.sep + 'london.inp', 'w')
     job_file        = open(output_path + os.sep + 'job.sub', 'w')
-    output_files = [london_file, j_dia_file, j_para_file, j_total_file, int_dia_file1, int_para_file1, int_total_file1, int_dia_file2, int_para_file2 , int_total_file2, job_file]
+    output_files = [london_file, j_dia_file, j_para_file, j_total_file, int_dia_file1, int_para_file1, int_total_file1, int_dia_file2, int_para_file2 , int_total_file2, job_file, scf_file]
 
-    #4.job
+    #5.job : this guy gotta be here because the job uses all the file names used for generate all the files
     job         = Job(scf_file_name, mol_file_name, output_files, molecule, j.lvcorr)
     job_text    = job.write_job()
 
+#print the output
     j_dia_file.write(jdia_text)
     j_para_file.write(jpara_text)
     j_total_file.write(jtotal_text)
@@ -133,6 +140,7 @@ try:
     int_total_file2.write(int_total_text_2)
     london_file.write(london_text)
     job_file.write(job_text)
+    scf_file.write(scf_text)
 
     for file_ in output_files :
         file_.close()

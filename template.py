@@ -1,4 +1,16 @@
 #!/usr/bin/env python
+#-------------------------------------------------------------------------------
+# Name:         template
+# Purpose:      The template is the set of possible relationships between the various
+# modules, submodules and properties that the system handles
+# It does depict a formal structure, as a language, that must be obeyied
+#
+# Author:      ezequiel.barboza
+#
+# Created:     01/08/2012
+# Copyright:   (c) ezequiel.barboza 2012
+# Licence:     GPL
+#-------------------------------------------------------------------------------
 
 import re
 

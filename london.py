@@ -12,7 +12,7 @@ def write_london(template, scf, molecule):
     if wave_function:
         scf_submodule = wave_function.submodules.get(template.scf.name)
         if scf_submodule:
-            atomst = scf_submodule.properties.pop(template.atomst.name)
+            atomst = scf_submodule.properties.pop(template.atomst.name, None)
 
     for module in scf.modules:
         if module.name != template.visual.name:
