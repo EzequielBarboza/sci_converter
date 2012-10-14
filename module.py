@@ -90,6 +90,15 @@ class Module:#this are the guys with 2* (**)
             return sub
         return None
 
+    #add one already created submodule
+    def addSubmodule(self, template, submodule):
+        if not isinstance(submodule, SubModule)         : return None
+        if self.contains(submodule.name)                : return None
+        if not self.is_sub(template, submodule.name)    : return None
+
+        self.submodules.update({submodule.name : submodule})
+        return submodule
+
     def contains(self, subname):
         return self.properties.__contains__(subname) or self.submodules.__contains__(subname)
 
@@ -101,8 +110,8 @@ class Module:#this are the guys with 2* (**)
                 return sm
         return None
 
-    def is_sub(self, subname):
-        temp = self.template.modules.get(self.name)
+    def is_sub(self, template, subname):
+        temp = template.modules.get(self.name)
         sub = temp.submodules.get(subname)
         return  sub != None
 

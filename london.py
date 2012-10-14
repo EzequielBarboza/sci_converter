@@ -1,6 +1,16 @@
 #!/usr/bin/env python
+#-------------------------------------------------------------------------------
+# Name:         london
+# Purpose:      Keep and print information regarding the london.inp
+#
+# Author:      ezequiel.barboza
+#
+# Created:     13/10/2012
+# Copyright:   (c) ezequiel.barboza 2012
+# Licence:     GPL
+#-------------------------------------------------------------------------------
 
-#import os
+
 from molecule import Molecule
 from module import Module,Property,SubModule
 

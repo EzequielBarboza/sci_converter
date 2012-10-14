@@ -72,24 +72,36 @@ class Template:
         self.integrals.submodules.update({'*READIN':self.readin})
         self.integrals.submodules.update({'*TWOINT':self.twoint})
     ############# properties
+        ##properties for the **PROPERTIES
         self.bzlao = Property('.BZLAO')
         self.bxlao = Property('.BXLAO')
         self.bylao = Property('.BYLAO')
 
+        ## *NMR submodule for the **PROPERTIES
         self.london = Property('.LONDON')
         self.doeprn = Property('.DOEPRN')
         self.intflg = Property('.INTFLG')
-
+        self.gaugeo = Property('.GAUGEO')
         self.nmr = SubModule('*NMR')
         self.nmr.properties.update({'.LONDON':self.london})
         self.nmr.properties.update({'.DOEPRN':self.doeprn})
         self.nmr.properties.update({'.INTFLG':self.intflg})
+        self.nmr.properties.update({'.GAUGEO':self.gaugeo})
+        ## *LINEAR RESPONSE for the **PROPERTIES
+        self.a_operator = Property('.A OPERATOR')
+        self.b_operator = Property('.B OPERATOR')
+        self.analize = Property('.ANALIZE')
+        self.linear_response = SubModule('*LINEAR RESPONSE')
+        self.linear_response.properties.update({'.A OPERATOR'   :self.a_operator})
+        self.linear_response.properties.update({'.B OPERATOR'   :self.b_operator})
+        self.linear_response.properties.update({'.ANALIZE'      :self.analize})
 
         self.prop_module  = Module('**PROPERTIES')
         self.prop_module.properties.update({'.BZLAO':self.bzlao})
         self.prop_module.properties.update({'.BXLAO':self.bxlao})
         self.prop_module.properties.update({'.BYLAO':self.bylao})
         self.prop_module.submodules.update({'*NMR':self.nmr})
+        self.prop_module.submodules.update({'*LINEAR RESPONSE':self.linear_response})
     ############# visual
         self.jdia        = Property('.JDIA')
         self.j        = Property('.J')
@@ -119,10 +131,11 @@ class Template:
                         '**VISUAL'          : self.visual,
                         '**GENERAL'         : self.general}
         #valid submodules names
-        self.submodules = {  '*READIN'   :self.readin,
-                        '*TWOINT'   :self.twoint,
-                        '*SCF'      :self.scf,
-                        '*NMR'      :self.nmr}
+        self.submodules = { '*READIN'           :self.readin,
+                            '*TWOINT'           :self.twoint,
+                            '*SCF'              :self.scf,
+                            '*NMR'              :self.nmr,
+                            '*LINEAR RESPONSE'  :self.linear_response}
         #valid properties names
         self.properties = {  '.LEVY-LEBLOND' :self.levy_leblond,
                         '.URKBAL'       :self.urkbal,
@@ -143,6 +156,10 @@ class Template:
                         '.LONDON'       :self.london,
                         '.DOEPRN'       :self.doeprn,
                         '.INTFLG'       :self.intflg,
+                        '.GAUGEO'       :self.gaugeo,
+                        '.A OPERATOR'   :self.a_operator,
+                        '.B OPERATOR'   :self.b_operator,
+                        '.ANALIZE'      :self.analize,
                         '.JDIA'         :self.jdia,
                         '.J'            :self.j,
                         '.NOREORTHO'    :self.noreortho,

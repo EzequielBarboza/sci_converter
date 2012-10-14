@@ -25,6 +25,7 @@ from template       import Template
 from module         import Module
 from job            import Job
 from periodic_table import periodic_table
+from gauge          import Gauge
 
 #log_file = sys.argv[1] #soon we will be receiving the .log file (output from a gaussian processing)
 mol_file_name = sys.argv[1]
@@ -93,6 +94,10 @@ try:
         atom.print_inp_file(periodic_table, scf_file_output, template, output_path)
 
 #assemble output of the main files
+    #0. gauge
+    gauge = Gauge(template, scf_file_output, molecule)
+    gauge_text = gauge.__str__()
+
     #1.london
     london_text = write_london(template, scf_file_output, molecule)
     #2.j the processed j file will be passed to the integrate
@@ -122,7 +127,8 @@ try:
     int_total_file2 = open(output_path + os.sep + 'integrate_total_' + integrate.axis_enum[integrate.p_planes[1][0]] + integrate.axis_enum[integrate.p_planes[1][1]] + '.inp', 'w')
     london_file     = open(output_path + os.sep + 'london.inp', 'w')
     job_file        = open(output_path + os.sep + 'job.sub', 'w')
-    output_files = [london_file, j_dia_file, j_para_file, j_total_file, int_dia_file1, int_para_file1, int_total_file1, int_dia_file2, int_para_file2 , int_total_file2, job_file, scf_file]
+    gauge_file      = open(output_path + os.sep + 'gauge.inp', 'w')
+    output_files = [london_file, j_dia_file, j_para_file, j_total_file, int_dia_file1, int_para_file1, int_total_file1, int_dia_file2, int_para_file2 , int_total_file2, job_file, scf_file, gauge_file]
 
     #5.job : this guy gotta be here because the job uses all the file names used for generate all the files
     job         = Job(scf_file_name, mol_file_name, output_files, molecule, j.lvcorr)
@@ -141,6 +147,7 @@ try:
     london_file.write(london_text)
     job_file.write(job_text)
     scf_file.write(scf_text)
+    gauge_file.write(gauge_text)
 
     for file_ in output_files :
         file_.close()

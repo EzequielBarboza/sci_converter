@@ -88,6 +88,7 @@ class Scf:
             the_copy.modules.append(module.copy())
         return the_copy
 
+    # safelly remove one module by name
     def remove(self, name):
         for i in range(len(self.modules)):
             if name == self.modules[i].name:
