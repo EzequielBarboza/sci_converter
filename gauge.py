@@ -38,8 +38,8 @@ class Gauge(Scf):
         b_operator  = Property(template.b_operator.name)
         analize     = Property(template.analize.name)
 
-        a_operator.add_value(template, 'B_' + molecule.p_axis.lower() + ' oper')
-        b_operator.add_value(template, 'B_' + molecule.p_axis.lower() + ' oper')
+        a_operator.add_value(template, '\'B_' + molecule.p_axis.lower() + ' oper\'')
+        b_operator.add_value(template, '\'B_' + molecule.p_axis.lower() + ' oper\'')
 
         a_operator.add_value(template, molecule.p_axis + 'AVECTOR')
         b_operator.add_value(template, molecule.p_axis + 'AVECTOR')
