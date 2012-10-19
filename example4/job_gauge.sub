@@ -1,0 +1,34 @@
+atomic start
+
+#pam --mpi=8 --global-scratch-disk --noarch --mb=1200 --inp=la.inp --mol=la.mol --get="DFACMO"
+#cp DFACMO LaCOEF
+#pam --mpi=8 --global-scratch-disk --noarch --mb=1200 --inp=c.inp --mol=c.mol --get="DFACMO"
+#cp DFACMO C_COEF
+
+#scf
+
+pam --mpi=8 --global-scratch-disk --mb=1200 --put="LaCOEF C_COEF"  --inp=scf.inp --mol=mol.mol --get="DFCOEF PAMXVC"
+cp DFCOEF DFCOEF_scf
+cp PAMXVC PAMXVC_scf
+
+#gauge
+
+pam --mpi=8 --global-scratch-disk --mb=1200 --incmo --inp=gauge.inp --mol=mol.mol --get="DFCOEF PAMXVC"
+cp DFCOEF DFCOEF_l
+cp PAMXVC PAMXVC_l
+
+#currents
+
+pam --mpi=8 --global-scratch-disk --mb=1200 --inp=j_dia.inp --mol=mol.mol --get="plot.2d.vector" --put="DFCOEF PAMXVC"
+cp plot.2d.vector plot.2d.vector.dia
+pam --mpi=8 --global-scratch-disk --mb=1200 --inp=j_para.inp --mol=mol.mol --get="plot.2d.vector" --put="DFCOEF PAMXVC"
+cp plot.2d.vector plot.2d.vector.para
+pam --mpi=8 --global-scratch-disk --mb=1200 --inp=j_total.inp --mol=mol.mol --get="plot.2d.vector" --put="DFCOEF PAMXVC"
+cp plot.2d.vector plot.2d.vector.total
+
+
+#integration
+
+pam --mpi=8 --global-scratch-disk --mb=1200 --inp=integrate_para_XZ.inp --mol=mol.mol --put="DFCOEF PAMXVC"
+pam --mpi=8 --global-scratch-disk --mb=1200 --inp=integrate_dia_XZ.inp --mol=mol.mol --put="DFCOEF PAMXVC"
+pam --mpi=8 --global-scratch-disk --mb=1200 --inp=integrate_total_XZ.inp --mol=mol.mol --put="DFCOEF PAMXVC"

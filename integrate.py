@@ -1,22 +1,35 @@
 #!/usr/bin/env python
+#-------------------------------------------------------------------------------
+# Name:        integrate
+#
+# Purpose:      turn one scf input file into a set of integrate files
+#
+# Author:      ezequiel.barboza
+#
+# Created:     18/10/2012
+# Copyright:   (c) ezequiel.barboza 2012
+# Licence:     GPL
+#-------------------------------------------------------------------------------
 
 import os
 
 from molecule import Molecule
 from module import Property
+from scf import Scf
 
-class Integrate():
+class Integrate(Scf):
     def __init__(self, template, scf, molecule):
         self.template = template
-        self.scf = scf.copy()
-        self.visual = self.scf.remove(template.visual.name)
-        self.hamiltonian = self.scf.contains(template.hamiltonian.name)
+        self.modules = scf.copy().modules
+
+        self.visual = self.remove(template.visual)
+        self.hamiltonian = self.getModule(template.hamiltonian)
 #remove the .2D - it will be exchanged by the .2D_INT
         self.visual.properties.pop(template.two_d.name, None)
 #from sp01 ahead, we have to do this ugly thing... :-(
         self.printable = '**DIRAC\n'
         self.printable += '#.WAVE FUNCTION\n'
-        for module in self.scf.modules:
+        for module in self.modules:
             self.printable += module.__str__()
 
         self.axis_enum = ['X', 'Y', 'Z']#enumeration of the axis

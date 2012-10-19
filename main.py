@@ -31,6 +31,7 @@ from gauge          import Gauge
 mol_file_name = sys.argv[1]
 scf_file_name = sys.argv[2]
 
+#Two main input files
 f = open(mol_file_name, 'r')
 mol_file = map(string.strip, f.readlines())
 f.close()
@@ -66,21 +67,14 @@ os.mkdir(output_path)
 mol_file_copy = output_path + os.sep + os.path.basename(mol_file_name)
 shutil.copy2(mol_file_name, mol_file_copy)
 
-#the scf file is not been copied anymore. Instead, there is processing to be done over it
-#scf_file_copy = output_path + os.sep + os.path.basename(scf_file_name)
-#shutil.copy2(scf_file_name, scf_file_copy)
-
 print 'Working on the following files'
 print 'Mol file: '+ mol_file_name
 print 'SCF file: ' + scf_file_name
 print 'Output folder: ' + output_path
 
-
 #end of file creation/manipulation module
 
-#write_integrate_dia_file(integrated_dia_file, scf_file_input, mol_file)
-#THE HANDLING OF THESE FILES WHERE DELEGATED TO THE SPECIFIC CODE
-#integrated_dia_file, integrate_para_file, integrate_total_file,
+#write the files
 try:
     #assemble input
     #the template should be static, as the periodic table

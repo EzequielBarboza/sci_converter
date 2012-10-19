@@ -22,8 +22,9 @@ class Scf:
     #other files. The constructor also adds the atomst module if it was not
     #in the original input
     def __init__(self, template, scf_file, atoms):
-        self.modules = []
         self.template = template
+        self.modules = []
+
         i = 0
         #iterate over the input generating the modules
         while i < len(scf_file):
@@ -54,18 +55,23 @@ class Scf:
             module.add(self.template, lines)
             return self.addModule(module)
 
+    # append one new module, replacing one old with the same name if such exists
     def addModule(self, module):
-        if not self.contains(module.name) and self.template.is_module(module.name):
+        if not isinstance(module, Module) : return None
+
+        if self.getModule(module) : self.remove(module.name)#refactor: when the module already exists, it should not be appended yet inserted in the correct place
+
+        if self.template.modules.get(module.name):
             self.modules.append(module)
             return module
         return None
 
     #returns the module if it is in the list, good for checking if the module is in the list too
-    def contains(self, name):
-        for m in self.modules:
-            if m.name == name:
-                return m
-        return None
+##    def contains(self, name):
+##        for m in self.modules:
+##            if m.name == name:
+##                return m
+##        return None
     #new version of the constains function. This has a more significative name
     # and receives a module
     def getModule(self, module):
@@ -89,9 +95,9 @@ class Scf:
         return the_copy
 
     # safelly remove one module by name
-    def remove(self, name):
+    def remove(self, module):
         for i in range(len(self.modules)):
-            if name == self.modules[i].name:
+            if module.name == self.modules[i].name:
                 return self.modules.pop(i)
         return None
 

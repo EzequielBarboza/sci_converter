@@ -10,7 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-
 from molecule import Molecule
 from module import Module,Property,SubModule
 
@@ -18,7 +17,7 @@ from module import Module,Property,SubModule
 #nothing else is been taken from the mol and the scf.inp files
 def write_london(template, scf, molecule):
     printable = ''
-    wave_function = scf.contains(template.wave_function.name)
+    wave_function = scf.getModule(template.wave_function)
     if wave_function:
         scf_submodule = wave_function.submodules.get(template.scf.name)
         if scf_submodule:

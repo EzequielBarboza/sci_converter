@@ -13,21 +13,21 @@ class J:
         self.scf = scf_original.copy()
         self.molecule = molecule
 #all we want from **dirac is the name - no more
-        dirac = self.scf.contains(template.dirac.name)
+        dirac = self.scf.getModule(template.dirac)
         dirac.properties.clear()
         dirac.submodules.clear()
 #we want all the self.hamiltonian
-        self.hamiltonian = self.scf.contains(template.hamiltonian.name)
+        self.hamiltonian = self.scf.getModule(template.hamiltonian)
 #this is used to control whether the job.sub will print all the information for j_total and integrate_total
         self.lvcorr = self.hamiltonian.properties.has_key(template.lvcorr.name)
 
 #and just a piec of the integrals
-        integrals = self.scf.contains(template.integrals.name)
+        integrals = self.scf.getModule(template.integrals)
         if integrals:
             integrals.submodules.pop(template.twoint.name, None)#don't ask me why... it is just a requirement... :-(
 
 #from sp01 ahead, gotta give back the wave_function, but with just some properties
-        wave_function = self.scf.contains(template.wave_function.name)
+        wave_function = self.scf.getModule(template.wave_function)
         if wave_function:
             wave_function.properties.clear()
             wave_function.submodules.clear()
@@ -86,7 +86,7 @@ class J:
 
     def write_j_dia(self, template):
         #if we have lvcorr
-        visual = self.scf.contains(template.visual.name)
+        visual = self.scf.getModule(template.visual)
         backup_para = visual.properties.pop(template.j.name, None)#remove the para information
 
         #change the name of the jdia property to j
@@ -108,7 +108,7 @@ class J:
         return printable
 
     def write_j_para(self, template):
-        visual = self.scf.contains(template.visual.name)
+        visual = self.scf.getModule(template.visual)
         #remove .noreortho and nodirect
         noreortho = visual.properties.pop(template.noreortho.name, None)
         nodirect = visual.properties.pop(template.nodirect.name, None)
@@ -129,7 +129,7 @@ class J:
 
     def write_j_total(self, template):
         if self.hamiltonian.properties.get(template.lvcorr.name):
-            visual = self.scf.contains(template.visual.name)
+            visual = self.scf.getModule(template.visual)
 
             backup_jdia = visual.properties.pop(template.jdia.name, None)
 

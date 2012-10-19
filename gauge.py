@@ -20,17 +20,16 @@ class Gauge(Scf):
     def __init__(self, template, scf, molecule):
         self.template = template
         self.modules = scf.copy().modules
-        #self = scf.copy()
 
-        #remove **wave_function.*scf..atomst and visual
-        wave_function = self.contains(template.wave_function.name)
+        #remove **wave_function.*scf..atomst
+        wave_function = self.getModule(template.wave_function)
         if wave_function:
             scf_submodule = wave_function.submodules.get(template.scf.name)
             if scf_submodule:
                 atomst = scf_submodule.properties.pop(template.atomst.name, None)
 
         # remove the visual module
-        self.remove(template.visual.name)
+        self.remove(template.visual)
 
         # add one new module **PROPERTIES
         #first add the .A OPERATOR, .B OPERATOR AND .ANALIZE

@@ -60,7 +60,7 @@ class Atom():
     #prints out the inp representation of this atom
     def print_inp_file(self, periodic_table, scf_file, template, output_path):
         inp_file = scf_file.copy()
-        wave_function = inp_file.contains(template.wave_function.name)
+        wave_function = inp_file.getModule(template.wave_function)
 
         if  wave_function:
             scf_submodule = wave_function.submodules.get(template.scf.name)
