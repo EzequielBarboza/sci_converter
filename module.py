@@ -59,7 +59,7 @@ class Module:#this are the guys with 2* (**)
         self.submodules = {}
         self.properties = {}
 
-    def add(self, template, lines):
+    def parseModule(self, template, lines):
         i = 0
         while i < len(lines):
             if template.is_property(lines[i]):

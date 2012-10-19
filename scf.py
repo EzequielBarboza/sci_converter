@@ -14,15 +14,16 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-from module import Module
+from module     import Module
+from template   import Template
 
 class Scf:
+    template = Template()
     #the constructor reads from the input and generates a set of modules.
     #these modules are used further by the other parts of the system to generate
     #other files. The constructor also adds the atomst module if it was not
     #in the original input
-    def __init__(self, template, scf_file, atoms):
-        self.template = template
+    def __init__(self, scf_file, atoms):
         self.modules = []
 
         i = 0
@@ -39,20 +40,20 @@ class Scf:
             else:
                 i += 1
         #add the atomst module if it was not in the original input
-        wave_function = self.getModule(template.wave_function)
+        wave_function = self.getModule(self.template.wave_function)
         if wave_function:# if the module exists, proceed searching for the submodule
-            scf = wave_function.getSubmodule(template.scf)
+            scf = wave_function.getSubmodule(self.template.scf)
             if scf:# if the submodule existis, proceed searching for the property
-                atomst = scf.getProperty(template.atomst)
-                if not atomst:#if we don't have the atomst, copy from the template and add the atoms values
-                    atomst = template.atomst.copy()
+                atomst = scf.getProperty(self.template.atomst)
+                if not atomst:#if we don't have the atomst, copy from the self.template and add the atoms values
+                    atomst = self.template.atomst.copy()
                     for atom in atoms:
-                        atomst.addAtomAsValue(template, atom)
-                    scf.addProperty(template, atomst)
+                        atomst.addAtomAsValue(self.template, atom)
+                    scf.addProperty(self.template, atomst)
 
     def addModuleByName(self, name, lines=None):
             module = Module(name)
-            module.add(self.template, lines)
+            module.parseModule(self.template, lines)
             return self.addModule(module)
 
     # append one new module, replacing one old with the same name if such exists
@@ -89,7 +90,7 @@ class Scf:
         return printable
 
     def copy(self):
-        the_copy = Scf(self.template, [], [])
+        the_copy = Scf([], [])
         for module in self.modules:
             the_copy.modules.append(module.copy())
         return the_copy

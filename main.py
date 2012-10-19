@@ -80,7 +80,7 @@ try:
     #the template should be static, as the periodic table
     template = Template()
     molecule = Molecule(mol_file)
-    scf_file_output = Scf(template, scf_file_input, molecule.atoms)
+    scf_file_output = Scf(scf_file_input, molecule.atoms)
 
 #print the description of each atom
     for atom in molecule.atoms:
