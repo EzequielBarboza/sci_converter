@@ -16,8 +16,8 @@ import string
 import os
 import shutil
 
-from london         import write_london
-from j              import J
+from london         import London
+from j              import *
 from integrate      import Integrate
 from molecule       import Molecule
 from scf            import Scf
@@ -80,33 +80,47 @@ try:
     #the template should be static, as the periodic table
     template = Template()
     molecule = Molecule(mol_file)
-    scf_file_output = Scf(scf_file_input, molecule.atoms)
+    scf = Scf(scf_file_input, molecule.atoms)
 
 #print the description of each atom
     for atom in molecule.atoms:
         atom.print_mol_file(output_path)
-        atom.print_inp_file(periodic_table, scf_file_output, template, output_path)
+        atom.print_inp_file(periodic_table, scf, template, output_path)
 
 #assemble output of the main files
-    #0. gauge
-    gauge = Gauge(template, scf_file_output, molecule)
-    gauge_text = gauge.__str__()
+#1.london
+    #1.1 the london file
+    london = London(scf, molecule)
+    london_text = str(london)
+    #1.2. j the processed j file will be passed to the integrate
+    j_london = J(scf, molecule)
+    j_london_dia = JDia(j_london)
+    j_london_para = JPara(j_london)
+    j_london_total = JTotal(j_london)
 
-    #1.london
-    london_text = write_london(template, scf_file_output, molecule)
-    #2.j the processed j file will be passed to the integrate
-    j = J(template, scf_file_output, molecule)
-    jdia_text = j.write_j_dia(template)
-    jpara_text = j.write_j_para(template)
-    jtotal_text = j.write_j_total(template)
-    #3.integrate
-    integrate = Integrate(template, j.scf, molecule)
+    jdia_london_text = str(j_london_dia)
+    jpara_london_text = str(j_london_para)
+    jtotal_london_text = str(j_london_total)
+    #1.3.integrate : gotta pass the j preprocessed by the J class because the integrated is based on it
+    integrate_london_dia_1 = Integrate(j_london_dia, molecule, 1)
+    integrate_london_dia_2 = Integrate(j_london_dia, molecule, 2)
+
     (int_dia_text_1, int_dia_text_2) = integrate.write_integrate_dia()
     (int_para_text_1, int_para_text_2) = integrate.write_integrate_para()
     (int_total_text_1, int_total_text_2) = integrate.write_integrate_total()
 
     #4.print the modified scf file
     scf_text = scf_file_output.__str__()
+
+#2. gauge
+    #2.1 the gauge file
+    gauge = Gauge(scf, molecule)
+    gauge_text = str(gauge)
+    #2.2. j the processed j file will be passed to the integrate
+    j_london = J(scf, molecule)
+    jdia_london_text = str(JDia(j_london))
+    jpara_london_text = str(JPara(j_london))
+    jtotal_london_text = str(JTotal(j_london))
 
 #open output the files
     scf_file        = open(output_path + os.sep + scf_file_name.rsplit(os.sep)[-1], 'w')#pay attention: the scf_file_output has the same name parsed when creting the job file

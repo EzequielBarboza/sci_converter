@@ -18,11 +18,10 @@ from module import Property,Module,SubModule
 
 class Template:
 
-    comment_pattern = re.compile(' *#.*')
+
     property_pattern = re.compile(' *\..+')
     submodule_pattern = re.compile(' *\*.+')
     module_pattern = re.compile(' *\*\*.+')
-    value_pattern = re.compile('^ *[^\*\.#]')
 
     def __init__(self):
 ######hamiltonian
@@ -104,7 +103,7 @@ class Template:
         self.prop_module.submodules.update({'*LINEAR RESPONSE':self.linear_response})
     ############# visual
         self.jdia        = Property('.JDIA')
-        self.j        = Property('.J')
+        self.j           = Property('.J')
         self.noreortho   = Property('.NOREORTHO')
         self.nodirect    = Property('.NODIRECT')
         self.two_d       = Property('.2D')
@@ -169,19 +168,14 @@ class Template:
                         '.ACMOUT'       :self.acmout
                         }
 
-    def is_module(self, name):
-        return self.modules.get(name)
-
-    def is_comment(self, line):
-        m = re.match(self.comment_pattern, line)
-        n = line.strip() == ''
-        return m or n
+##    def is_module(self, name):
+##        return self.modules.get(name)
 
     def is_property(self, line):
         return self.properties.get(line)
 
-    def is_submodule(self, line):
-        return self.submodules.get(line)
+##    def is_submodule(self, line):
+##        return self.submodules.get(line)
 
     def is_value(self, line):
         return re.match(self.value_pattern, line)

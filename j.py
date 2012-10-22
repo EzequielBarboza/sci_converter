@@ -3,65 +3,83 @@
 import string, math, re
 
 from molecule   import Molecule#get_p_axis, get_biggest_coordinate
-from module     import Module,Property
-from commons    import MissingInformation
+from commons    import MissingInformation, InvalidParameter
 
-#from scf        import Scf
+from scf        import Scf
 
-class J:
-    def __init__(self, template, scf_original, molecule):# the j files are associated with a molecule
-        self.scf = scf_original.copy()
-        self.molecule = molecule
-#all we want from **dirac is the name - no more
-        dirac = self.scf.getModule(template.dirac)
-        dirac.properties.clear()
-        dirac.submodules.clear()
-#we want all the self.hamiltonian
-        self.hamiltonian = self.scf.getModule(template.hamiltonian)
-#this is used to control whether the job.sub will print all the information for j_total and integrate_total
-        self.lvcorr = self.hamiltonian.properties.has_key(template.lvcorr.name)
+class J(Scf):
+    def __init__(self, scf, molecule, isLondon=True):# the j files are associated with a molecule
+#basic validation
+        self.validateScf(scf)
+        template = self.template#create local variable to ease the reference
 
-#and just a piec of the integrals
-        integrals = self.scf.getModule(template.integrals)
+#basic initialization
+        self.modules    = scf.copy().modules
+        self.isLvcorr   = self.getModule(template.hamiltonian).getProperty(template, template.lvcorr)
+        self.isLondon   = isLondon
+        self.molecule   = molecule
+
+#assemble a **INTEGRALS special for the j calculations
+        integrals = self.getModule(template.integrals)
         if integrals:
-            integrals.submodules.pop(template.twoint.name, None)#don't ask me why... it is just a requirement... :-(
+            integrals.removeSubModule(template.twoint)#don't ask me why... it is just a requirement... :-(
+        self.addModule(integrals)
 
-#from sp01 ahead, gotta give back the wave_function, but with just some properties
-        wave_function = self.scf.getModule(template.wave_function)
-        if wave_function:
-            wave_function.properties.clear()
-            wave_function.submodules.clear()
-            wave_function.properties.update({template.scf_prop.name:template.scf_prop})
+#assemble a **WAVE FUNCTION, but with just some properties
+        wave_function   = template.wave_function.shallow_copy()
+        scf_prop        = template.scf_prop.shallow_copy()
+        wave_function.addProperty(template, scf_prop)
 
-#remove all the rest #dirac,
-        self.scf.modules = [self.hamiltonian, integrals, wave_function]
-#set the common part to print
-        self.printable = ''
-        #from sp01 ahead, this shit has to happen..., print dirac separately, because unexplainable, we have to print #.WAVE FUNCTION
-        self.printable += dirac.__str__()
-        self.printable += '#.WAVE FUNCTION\n'
-        for module in self.scf.modules:
-            self.printable += module.__str__()
+#assemble the **VISUAL
+        visual = self.createVisualModule(self.getModule(template.hamiltonian))
+#add the .LONDON only if it is a london calculation
+        if isLondon :
+            london = template.london.shallow_copy()
+            london.add_value(template, molecule.p_axis)
+            visual.addProperty(template, london)
 
-#and the visual, which we have to create. if we dont have visual yet, get it
-        self.derive_visual(template)
+#remove all the modules, except the ones bellow
+        self.modules = [template.dirac.shallow_copy(),
+                        self.getModule(template.hamiltonian),
+                        integrals,
+                        wave_function,
+                        visual]
 
-    def derive_visual(self, template):
-        visual = Module(template.visual.name)
+    def __str__(self):
+        #set the common part to print
+        printable = ''
+        #from sp01 ahead, have to print the #.WAVE FUNCTION, so remove dirac temporally
+        dirac = self.removeModule(self.template.dirac)
+        printable += str(dirac)
+        printable += '#.WAVE FUNCTION\n'
+        for module in self.modules:
+            printable += str(module)
+        printable += '*END OF\n'
+        #put the dirac back
+        self.modules.insert(0, dirac)
+        return printable
 
-        #jdia property
-        if self.hamiltonian.properties.get(template.lvcorr.name):
-            visual.add_property(template, template.jdia.name, ['PAMXVC 2'])
-        elif self.hamiltonian.properties.get(template.levy_leblond.name):
-            visual.add_property(template, template.jdia.name, ['DFCOEF'] )
-            visual.add_property(template, template.noreortho.name )
-            visual.add_property(template, template.nodirect.name )
-        else:
-            raise MissingInformation('Missing hamiltonian module from scf.inp file')
+    def createVisualModule(self, hamiltonian):
+        template = self.template#create local variable to ease reference
+        visual = template.visual.shallow_copy()
 
-        visual.add_property(template, template.j.name, ['PAMXVC 1'])
+        #.JDIA property
+        if hamiltonian.getProperty(template, template.lvcorr):
+            jdia = template.jdia.shallow_copy()
+            jdia.add_value(template, 'PAMXVC 2')
+            visual.addProperty(template, jdia)
+        elif hamiltonian.getProperty(template, template.levy_leblond):
+            jdia = template.jdia.shallow_copy()
+            jdia.add_value(template, 'DFCOEF')
+            visual.addProperty(template, jdia)
+            if self.isLondon :
+                visual.addProperty(template, template.noreortho.shallow_copy())
+                visual.addProperty(template, template.nodirect.shallow_copy())
 
-        visual.add_property(template, template.london.name, [self.molecule.p_axis])
+        #.J property
+        j = template.j.shallow_copy()
+        j.add_value(template, 'PAMXVC 1')
+        visual.addProperty(template, j)
 
         # two_d
         biggest_ = str(math.ceil(self.molecule.biggest_coordinate * 2))
@@ -80,74 +98,72 @@ class J:
         values_for_two_d.append(' '.join(trd_point))
         values_for_two_d.append('200')
 
-        visual.add_property(template, template.two_d.name, values_for_two_d)
+        two_d = template.two_d.shallow_copy()
+        two_d.add_values(template, values_for_two_d)
 
-        self.scf.addModule(visual)
+        visual.addProperty(template, two_d)
+        return visual
 
-    def write_j_dia(self, template):
+    def validateJ(self, j):
+        if not isinstance(j, J) : raise InvalidParameter(j, J)
+        if not j.getModule(self.template.visual) : raise MissingInformation('J state is invalid : there is no **VISUAL module')
+        if not j.getModule(self.template.hamiltonian) : raise MissingInformation('J state is invalid : there is no **HAMILTONIAN module' )
+
+    #overrides the super method because it needs
+    def copy(self):
+        the_copy = super(J, self).copy()
+        the_copy.isLvcorr = self.isLvcorr
+        the_copy.isLondon = self.isLondon
+        return the_copy
+
+class JDia(J):
+    def __init__(self, j):
+        self.validateJ(j) # the j should be valid
+        #basic initialization
+        self.modules = j.copy().modules #copy the modules from the father J
+        template = self.template #create local variable, in order to get easier to use it here
+
         #if we have lvcorr
-        visual = self.scf.getModule(template.visual)
-        backup_para = visual.properties.pop(template.j.name, None)#remove the para information
+        visual = self.getModule(template.visual)
+        # j_dia files are not supposed to have .J (para) modules, so remove it
+        visual.removeProperty(template.j)#remove the para information
 
-        #change the name of the jdia property to j
-        if self.hamiltonian.properties.get(template.lvcorr.name):
-            backup_dia = visual.properties.pop(template.jdia.name, None)
-            if backup_dia:
-                newDia = Property(template.j.name)
-                newDia.add_values(template, backup_dia.values)
-                visual.properties.update({newDia.name:newDia})
+        # in the j_dia files, the .JDIA is called simply .J (of course!!!), so rename it but only if the **HAMILTONIAN have the .LVCORR property
+        if self.getModule(template.hamiltonian).getProperty(template, template.lvcorr):
+            visual.getProperty(template, template.jdia).name = self.template.j.name
 
-        printable = self.printable
-        printable += visual.__str__()
-        printable += '*END OF\n'
+class JPara(J):
+    def __init__(self, j):
+        #basic initializations
+        self.validateJ(j)
+        self.modules = j.copy().modules
+        template = self.template
+        #remove .noreortho
+        self.getModule(template.visual).removeProperty(template.noreortho)
+        #remove the .nodirect property
+        self.getModule(template.visual).removeProperty(template.nodirect)
+        #remove the jdia property (this is the jpara file, duh...)
+        self.getModule(template.visual).removeProperty(template.jdia)
 
-        visual.properties.update({template.j.name:backup_para})#puts the para back where it belongs
+class JTotal(J):
+    def __init__(self, j):
+        #basic initializations
+        self.validateJ(j)
+        the_father = j.copy()#instead of having to call the super with its attributes, get just what we need from the super
+        self.modules = the_father.modules
+        self.isLvcorr = the_father.isLvcorr
+        self.isLondon = the_father.isLondon
+        template = self.template
 
-        if self.hamiltonian.properties.get(template.lvcorr.name):
-            visual.properties.update({backup_dia.name:backup_dia})
-        return printable
+        # note that, after this change, the JTotal will have two properties with the same name : .J
+        if not self.isLondon or (self.isLondon and self.isLvcorr) :
+            self.getModule(template.visual).getProperty(template, template.jdia).name = template.j.name
 
-    def write_j_para(self, template):
-        visual = self.scf.getModule(template.visual)
-        #remove .noreortho and nodirect
-        noreortho = visual.properties.pop(template.noreortho.name, None)
-        nodirect = visual.properties.pop(template.nodirect.name, None)
-        #remove temporary the dia property
-        backup_dia = visual.properties.pop(template.jdia.name, None)
-        #print the module
-        printable = self.printable# se essa merda nao copiar a merda da string essa merda de linguagem que va a merda
-        printable += visual.__str__()
-        printable += '*END OF\n'
-        #restore the backup of the dia information
-        if backup_dia:
-            visual.properties.update({backup_dia.name: backup_dia})
-        if noreortho:
-            visual.properties.update({noreortho.name: noreortho})
-        if nodirect:
-            visual.properties.update({nodirect.name: nodirect})
-        return printable
-
-    def write_j_total(self, template):
-        if self.hamiltonian.properties.get(template.lvcorr.name):
-            visual = self.scf.getModule(template.visual)
-
-            backup_jdia = visual.properties.pop(template.jdia.name, None)
-
-            if not backup_jdia: return ''
-
-            backup_jdia.name = template.j.name
-            printable = self.printable
-            printable += visual.name + '\n'
-            printable += backup_jdia.__str__()
-            for prop in visual.properties.itervalues():
-                printable += prop.__str__()
-            for sub in visual.submodules.itervalues():
-                printable += sub.__str__()
-            printable += '*END OF\n'
-            #restore the name for what it really is
-            backup_jdia.name = template.jdia.name
-            visual.properties.update({backup_jdia.name:backup_jdia})
-            return printable
-
-        else:
-            return ''#for now, we wait for the inclusion of on script to generate the correct jtotal for levy-leblond
+    def __str__(self):
+        if self.isLondon and not self.isLvcorr :
+            return ''
+        else :
+            return super(JTotal, self).__str__()
+#for now, we wait for the inclusion of on script to generate the correct jtotal for levy-leblond
+#what happens is that the london calculations with levy-leblond are kind recent on dirac
+# so they have to be calculated later using a script that sums up the para and dia files : the add-plots.py

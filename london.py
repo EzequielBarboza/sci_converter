@@ -10,36 +10,33 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-from molecule import Molecule
-from module import Module,Property,SubModule
+from scf import Scf
 
-#considering that the only change to be done in this file is regarding the plane and the symmetry
-#nothing else is been taken from the mol and the scf.inp files
-def write_london(template, scf, molecule):
-    printable = ''
-    wave_function = scf.getModule(template.wave_function)
-    if wave_function:
-        scf_submodule = wave_function.submodules.get(template.scf.name)
-        if scf_submodule:
-            atomst = scf_submodule.properties.pop(template.atomst.name, None)
+class London(Scf):
+    def __init__(self, scf, molecule):
+        self.validateScf(scf)
+        self.modules = scf.copy().modules
+        template = self.template
 
-    for module in scf.modules:
-        if module.name != template.visual.name:
-            printable += module.__str__()
+        #remove **wave_function.*scf..atomst
+        scf_submodule = self.getModule(template.wave_function).getSubModule(template, template.scf)
+        scf_submodule.removeProperty(self.template.atomst)
 
-    nmr = SubModule('*NMR')
-    nmr.add_property(template, '.LONDON')
-    nmr.add_property(template, '.DOEPRN')
-    nmr.add_property(template, '.INTFLG', ['1 1 0'])#calculating just large-large large-small
+        # remove the visual module
+        self.removeModule(self.template.visual)
 
-    newModule = Module('**PROPERTIES')
-    newModule.add_property(template, '.' + molecule.magnetic_field)
-    newModule.submodules.update({'*NMR':nmr})
+        london = self.template.london.shallow_copy()
+        doeprn = self.template.doeprn.shallow_copy()
+        intflg = self.template.intflg.shallow_copy()
+        intflg.add_value(self.template, '1 1 0')#calculating just large-large large-small
+        nmr = self.template.nmr.shallow_copy()
+        nmr.addProperty(self.template, london)
+        nmr.addProperty(self.template, doeprn)
+        nmr.addProperty(self.template, intflg)
 
-    printable += newModule.__str__()
-    printable += '*END OF\n'
+        properties = self.template.prop_module.shallow_copy()
+        magnetic_field   = template.properties.get('.' + molecule.magnetic_field).shallow_copy()
+        properties.addProperty(self.template, magnetic_field)
+        properties.addSubModule(self.template, nmr)
 
-    if atomst:
-        scf_submodule.properties.update({atomst.name:atomst})
-
-    return printable
+        self.addModule(properties)
