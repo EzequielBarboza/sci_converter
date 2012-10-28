@@ -98,17 +98,16 @@ class Module:#this are the guys with 2* (**)
         self.validateSubmodule(template, submodule)
         return self.submodules.get(submodule.name)
 
-    def removeSubModule(self, submodule):
-        if not isinstance(submodule, SubModule) : raise InvalidParameter( submodule, 'SubModule')
-
-        if self.properties.has_key(submodule.name):
+    def removeSubModule(self, template, submodule):
+        self.validateSubmodule(template, submodule)
+        if self.submodules.has_key(submodule.name):
             return self.submodules.pop(submodule.name)
         return None
 
     #verifies if one submodule belongs to this Module
     def validateSubmodule(self, template, submodule):
         if not isinstance(submodule, SubModule) : raise InvalidParameter(str(submodule) + ' is not a SubModule')
-        if not template.modules.get(self.name).submodules.get(submodule.name) : raise InvalidParameter(str(submodule) + ' is not a valid SubModule for ' + self.name)
+        if not template.modules.get(self.name).submodules.get(submodule.name) : raise InvalidParameter(str(submodule) + ' is not a valid SubModule for ' + str(self))
 
     #add one property already created ! note: if the property already exists in the module, it will be overwritten
     def addProperty(self, template, prop):

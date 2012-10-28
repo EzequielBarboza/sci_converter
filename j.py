@@ -11,10 +11,12 @@ class J(Scf):
     def __init__(self, scf, molecule, isLondon=True):# the j files are associated with a molecule
 #basic validation
         self.validateScf(scf)
+
         template = self.template#create local variable to ease the reference
 
 #basic initialization
-        self.modules    = scf.copy().modules
+        self.scf        = scf.copy()
+        self.modules    = self.scf.modules
         self.isLvcorr   = self.getModule(template.hamiltonian).getProperty(template, template.lvcorr)
         self.isLondon   = isLondon
         self.molecule   = molecule
@@ -22,7 +24,7 @@ class J(Scf):
 #assemble a **INTEGRALS special for the j calculations
         integrals = self.getModule(template.integrals)
         if integrals:
-            integrals.removeSubModule(template.twoint)#don't ask me why... it is just a requirement... :-(
+            integrals.removeSubModule(template, template.twoint)#don't ask me why... it is just a requirement... :-(
         self.addModule(integrals)
 
 #assemble a **WAVE FUNCTION, but with just some properties
@@ -106,37 +108,58 @@ class J(Scf):
 
     def validateJ(self, j):
         if not isinstance(j, J) : raise InvalidParameter(j, J)
-        if not j.getModule(self.template.visual) : raise MissingInformation('J state is invalid : there is no **VISUAL module')
-        if not j.getModule(self.template.hamiltonian) : raise MissingInformation('J state is invalid : there is no **HAMILTONIAN module' )
+        if not j.getModule(self.template.visual) : raise MissingInformation(str(j) + ' state is invalid : there is no **VISUAL module')
+        if not j.getModule(self.template.hamiltonian) : raise MissingInformation(str(j) + ' state is invalid : there is no **HAMILTONIAN module' )
 
-    #overrides the super method because it needs
+    #overrides the super method because it needs more properties
     def copy(self):
-        the_copy = super(J, self).copy()
-        the_copy.isLvcorr = self.isLvcorr
-        the_copy.isLondon = self.isLondon
-        return the_copy
+        return J(self.scf, self.molecule, self.isLondon)
+
+    #my own way to implement the super
+    def copyPropertiesIntoAnotherJ(self, j):
+        #invoke the super copy, just to get a different instance of the modules: this property is not static
+        j.modules = super(J, self).copy().modules
+        #this guys are (kind of) static
+        j.molecule = self.molecule
+        j.isLvcorr = self.isLvcorr
+        j.isLondon = self.isLondon
 
 class JDia(J):
-    def __init__(self, j):
+    def __init__(self, j):#it is mandatory that this jdia files are generated after a j file
+        #validate the j we are receiveing (more to avoid programming errors)
         self.validateJ(j) # the j should be valid
-        #basic initialization
-        self.modules = j.copy().modules #copy the modules from the father J
-        template = self.template #create local variable, in order to get easier to use it here
-
-        #if we have lvcorr
+        #keep a copy of the father so we can provide copies of ourself
+        self.j = j
+        #this is my way to call the super constructor
+        j.copyPropertiesIntoAnotherJ(self)
+        #create local variable, in order to get easier to use it here
+        template = self.template
+        #extract the visual module : it will be changed
         visual = self.getModule(template.visual)
         # j_dia files are not supposed to have .J (para) modules, so remove it
         visual.removeProperty(template.j)#remove the para information
 
         # in the j_dia files, the .JDIA is called simply .J (of course!!!), so rename it but only if the **HAMILTONIAN have the .LVCORR property
-        if self.getModule(template.hamiltonian).getProperty(template, template.lvcorr):
-            visual.getProperty(template, template.jdia).name = self.template.j.name
+        if self.isLvcorr:
+            visual.getProperty(template, template.jdia).name = template.j.name
+
+    def copy(self):
+        return JDia(self.j)
+
+    def validateJDia(self, jdia):
+        super(JDia, self).validateJ(jdia)
+        if not hasattr(jdia, 'isLvcorr') : raise MissingInformation(str(jdia) + ' state is invalid. There is no isLvcorr attribute')
+        if not hasattr(jdia, 'isLondon') : raise MissingInformation(str(jdia) + ' state is invalid. There is no isLondon attribute')
 
 class JPara(J):
     def __init__(self, j):
         #basic initializations
         self.validateJ(j)
-        self.modules = j.copy().modules
+        #keep a copy of the father so we can provide copies of ourself
+        self.j = j
+        #my way to call the super constructor
+        j.copyPropertiesIntoAnotherJ(self)
+        #create a local variable to ease its utilization
         template = self.template
         #remove .noreortho
         self.getModule(template.visual).removeProperty(template.noreortho)
@@ -145,19 +168,33 @@ class JPara(J):
         #remove the jdia property (this is the jpara file, duh...)
         self.getModule(template.visual).removeProperty(template.jdia)
 
+    def copy(self):
+        return JPara(self.j)
+
+    # a temporary validation mechanism, while we are not certain of what must be validated
+    def validateJPara(self, jpara):
+        super(JPara, self).validateJ(jpara)
+
 class JTotal(J):
     def __init__(self, j):
         #basic initializations
         self.validateJ(j)
-        the_father = j.copy()#instead of having to call the super with its attributes, get just what we need from the super
-        self.modules = the_father.modules
-        self.isLvcorr = the_father.isLvcorr
-        self.isLondon = the_father.isLondon
+        #keep a copy of the father so we can provide copies of ourself
+        self.j = j
+        #my way to call the super constructor
+        j.copyPropertiesIntoAnotherJ(self)
+        #keep a local variable to ease access
         template = self.template
-
         # note that, after this change, the JTotal will have two properties with the same name : .J
         if not self.isLondon or (self.isLondon and self.isLvcorr) :
             self.getModule(template.visual).getProperty(template, template.jdia).name = template.j.name
+
+    def copy(self):
+        return JTotal(self.j)
+
+    # a temporary validation mechanism, while we are not certain of what must be validated
+    def validateJTotal(self, jtotal):
+        super(JTotal, self).validateJ(jtotal)
 
     def __str__(self):
         if self.isLondon and not self.isLvcorr :

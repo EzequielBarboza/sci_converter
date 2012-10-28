@@ -18,7 +18,7 @@ import shutil
 
 from london         import London
 from j              import *
-from integrate      import Integrate
+from integrate      import *
 from molecule       import Molecule
 from scf            import Scf
 from template       import Template
@@ -62,7 +62,12 @@ while len(output_path) == 0 :
         output_path = complete_path
     execution_seq += 1
 
+london_folder   = output_path + os.sep + 'london' + os.sep
+gauge_folder    = output_path + os.sep + 'gauge' + os.sep
+
 os.mkdir(output_path)
+os.mkdir(london_folder)
+os.mkdir(gauge_folder)
 
 mol_file_copy = output_path + os.sep + os.path.basename(mol_file_name)
 shutil.copy2(mol_file_name, mol_file_copy)
@@ -91,74 +96,99 @@ try:
 #1.london
     #1.1 the london file
     london = London(scf, molecule)
-    london_text = str(london)
-    #1.2. j the processed j file will be passed to the integrate
+    # a master j file
     j_london = J(scf, molecule)
+
+    #1.2. create a j's
     j_london_dia = JDia(j_london)
     j_london_para = JPara(j_london)
     j_london_total = JTotal(j_london)
 
-    jdia_london_text = str(j_london_dia)
-    jpara_london_text = str(j_london_para)
-    jtotal_london_text = str(j_london_total)
     #1.3.integrate : gotta pass the j preprocessed by the J class because the integrated is based on it
-    integrate_london_dia_1 = Integrate(j_london_dia, molecule, 1)
-    integrate_london_dia_2 = Integrate(j_london_dia, molecule, 2)
-
-    (int_dia_text_1, int_dia_text_2) = integrate.write_integrate_dia()
-    (int_para_text_1, int_para_text_2) = integrate.write_integrate_para()
-    (int_total_text_1, int_total_text_2) = integrate.write_integrate_total()
-
-    #4.print the modified scf file
-    scf_text = scf_file_output.__str__()
+    #gotta generate one file for each of the axis
+    integrate_london_dia_1 = IntegrateDia(j_london_dia, 1)
+    integrate_london_dia_2 = IntegrateDia(j_london_dia, 2)
+    integrate_london_para_1 = IntegratePara(j_london_para, 1)
+    integrate_london_para_2 = IntegratePara(j_london_para, 2)
+    integrate_london_total_1 = IntegrateTotal(j_london_total, 1)
+    integrate_london_total_2 = IntegrateTotal(j_london_total, 2)
 
 #2. gauge
     #2.1 the gauge file
     gauge = Gauge(scf, molecule)
-    gauge_text = str(gauge)
-    #2.2. j the processed j file will be passed to the integrate
-    j_london = J(scf, molecule)
-    jdia_london_text = str(JDia(j_london))
-    jpara_london_text = str(JPara(j_london))
-    jtotal_london_text = str(JTotal(j_london))
+    #a master j gauge
+    j_gauge = J(scf, molecule, False)
+    #2.2. create a j's
+    j_gauge_dia = JDia(j_gauge)
+    j_gauge_para = JPara(j_gauge)
+    j_gauge_total = JTotal(j_gauge)
+    #2.3.integrate : gotta pass the j preprocessed by the J class because the integrated is based on it
+    #gotta generate one file for each of the axis
+    integrate_gauge_dia_1 = IntegrateDia(j_gauge_dia, 1)
+    integrate_gauge_dia_2 = IntegrateDia(j_gauge_dia, 2)
+    integrate_gauge_para_1 = IntegratePara(j_gauge_para, 1)
+    integrate_gauge_para_2 = IntegratePara(j_gauge_para, 2)
+    integrate_gauge_total_1 = IntegrateTotal(j_gauge_total, 1)
+    integrate_gauge_total_2 = IntegrateTotal(j_gauge_total, 2)
 
-#open output the files
-    scf_file        = open(output_path + os.sep + scf_file_name.rsplit(os.sep)[-1], 'w')#pay attention: the scf_file_output has the same name parsed when creting the job file
-    j_dia_file      = open(output_path + os.sep + 'j_dia.inp', 'w')
-    j_para_file     = open(output_path + os.sep + 'j_para.inp', 'w')
-    j_total_file    = open(output_path + os.sep + 'j_total.inp', 'w')
-    int_dia_file1   = open(output_path + os.sep + 'integrate_dia_' + integrate.axis_enum[integrate.p_planes[0][0]] + integrate.axis_enum[integrate.p_planes[0][1]] + '.inp', 'w')
-    int_dia_file2   = open(output_path + os.sep + 'integrate_dia_' + integrate.axis_enum[integrate.p_planes[1][0]] + integrate.axis_enum[integrate.p_planes[1][1]] + '.inp', 'w')
-    int_para_file1  = open(output_path + os.sep + 'integrate_para_' + integrate.axis_enum[integrate.p_planes[0][0]] + integrate.axis_enum[integrate.p_planes[0][1]] + '.inp', 'w')
-    int_para_file2  = open(output_path + os.sep + 'integrate_para_' + integrate.axis_enum[integrate.p_planes[1][0]] + integrate.axis_enum[integrate.p_planes[1][1]] + '.inp', 'w')
-    int_total_file1 = open(output_path + os.sep + 'integrate_total_' + integrate.axis_enum[integrate.p_planes[0][0]] + integrate.axis_enum[integrate.p_planes[0][1]] + '.inp', 'w')
-    int_total_file2 = open(output_path + os.sep + 'integrate_total_' + integrate.axis_enum[integrate.p_planes[1][0]] + integrate.axis_enum[integrate.p_planes[1][1]] + '.inp', 'w')
-    london_file     = open(output_path + os.sep + 'london.inp', 'w')
-    job_file        = open(output_path + os.sep + 'job.sub', 'w')
-    gauge_file      = open(output_path + os.sep + 'gauge.inp', 'w')
-    output_files = [london_file, j_dia_file, j_para_file, j_total_file, int_dia_file1, int_para_file1, int_total_file1, int_dia_file2, int_para_file2 , int_total_file2, job_file, scf_file, gauge_file]
+#open output files
+    scf_file = open(output_path + os.sep + scf_file_name.rsplit(os.sep)[-1], 'w')#pay attention: the scf_file_output has the same name parsed when creting the job file
 
-    #5.job : this guy gotta be here because the job uses all the file names used for generate all the files
-    job         = Job(scf_file_name, mol_file_name, output_files, molecule, j.lvcorr)
-    job_text    = job.write_job()
+    london_file            = open(london_folder + 'london.inp', 'w')
+    london_job_file        = open(london_folder + 'job.sub', 'w')
+    j_london_dia_file      = open(london_folder + 'j_dia.inp', 'w')
+    j_london_para_file     = open(london_folder + 'j_para.inp', 'w')
+    j_london_total_file    = open(london_folder + 'j_total.inp', 'w')
+    int_london_dia_file1   = open(london_folder + integrate_london_dia_1.integrate_name + '.inp', 'w')
+    int_london_dia_file2   = open(london_folder + integrate_london_dia_2.integrate_name + '.inp', 'w')
+    int_london_para_file1  = open(london_folder + integrate_london_para_1.integrate_name + '.inp', 'w')
+    int_london_para_file2  = open(london_folder + integrate_london_para_2.integrate_name + '.inp', 'w')
+    int_london_total_file1 = open(london_folder + integrate_london_total_1.integrate_name + '.inp', 'w')
+    int_london_total_file2 = open(london_folder + integrate_london_total_2.integrate_name + '.inp', 'w')
 
-#print the output
-    j_dia_file.write(jdia_text)
-    j_para_file.write(jpara_text)
-    j_total_file.write(jtotal_text)
-    int_dia_file1.write(int_dia_text_1)
-    int_dia_file2.write(int_dia_text_2)
-    int_para_file1.write(int_para_text_1)
-    int_para_file2.write(int_para_text_2)
-    int_total_file1.write(int_total_text_1)
-    int_total_file2.write(int_total_text_2)
-    london_file.write(london_text)
-    job_file.write(job_text)
-    scf_file.write(scf_text)
-    gauge_file.write(gauge_text)
+    gauge_file            = open(gauge_folder + 'gauge.inp', 'w')
+    gauge_job_file        = open(gauge_folder + 'job.sub', 'w')
+    j_gauge_dia_file      = open(gauge_folder + 'j_dia.inp', 'w')
+    j_gauge_para_file     = open(gauge_folder + 'j_para.inp', 'w')
+    j_gauge_total_file    = open(gauge_folder + 'j_total.inp', 'w')
+    int_gauge_dia_file1   = open(gauge_folder + integrate_gauge_dia_1.integrate_name + '.inp', 'w')
+    int_gauge_dia_file2   = open(gauge_folder + integrate_gauge_dia_2.integrate_name + '.inp', 'w')
+    int_gauge_para_file1  = open(gauge_folder + integrate_gauge_para_1.integrate_name + '.inp', 'w')
+    int_gauge_para_file2  = open(gauge_folder + integrate_gauge_para_2.integrate_name + '.inp', 'w')
+    int_gauge_total_file1 = open(gauge_folder + integrate_gauge_total_1.integrate_name + '.inp', 'w')
+    int_gauge_total_file2 = open(gauge_folder + integrate_gauge_total_2.integrate_name + '.inp', 'w')
 
-    for file_ in output_files :
-        file_.close()
+    london_files = [london_file, j_london_dia_file, j_london_para_file, j_london_total_file, int_london_dia_file1, int_london_para_file1, int_london_total_file1, int_london_dia_file2, int_london_para_file2 , int_london_total_file2, london_job_file]
+
+    gauge_files = [gauge_file, j_gauge_dia_file, j_gauge_para_file, j_gauge_total_file, int_gauge_dia_file1, int_gauge_para_file1, int_gauge_total_file1, int_gauge_dia_file2, int_gauge_para_file2 , int_gauge_total_file2, gauge_job_file]
+
+    other_files = [scf_file]
+
+    all_files = [london_files, gauge_files, other_files]
+#5.job : this guy gotta be here because the job uses all the file names used for generate all the files
+    london_job  = Job(scf_file_name, mol_file_name, london_files, molecule, j_london)
+    gauge_job = Job(scf_file_name, mol_file_name, gauge_files, molecule, j_gauge)
+
+    london_objects = [  london,
+                        j_london_dia, j_london_para, j_london_total,
+                        integrate_london_dia_1, integrate_london_para_1, integrate_london_total_1, integrate_london_dia_2, integrate_london_para_2, integrate_london_total_2, london_job]
+    gauge_objects = [   gauge,
+                        j_gauge_dia, j_gauge_para, j_gauge_total,
+                        integrate_gauge_dia_1, integrate_gauge_para_1, integrate_gauge_total_1, integrate_gauge_dia_2, integrate_gauge_para_2, integrate_gauge_total_2, gauge_job]
+    other_objects = [   scf ]
+
+    for i in range(len(london_files)):
+        london_files[i].write(str(london_objects[i]))
+        london_files[i].close()
+
+    for i in range(len(gauge_files)):
+        gauge_files[i].write(str(gauge_objects[i]))
+        gauge_files[i].close()
+
+    for i in range(len(other_files)):
+        other_files[i].write(str(other_objects[i]))
+        other_files[i].close()
+
 except:
     raise
 sys.exit()

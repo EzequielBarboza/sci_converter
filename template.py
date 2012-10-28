@@ -120,6 +120,16 @@ class Template:
         self.acmout     = Property('.ACMOUT')
         self.general    = Module('**GENERAL')
         self.general.properties.update({'.ACMOUT'   :self.acmout})
+############ molecule
+        self.default    = Property('.DEFAULT')
+        self.special    = Property('.SPECIAL')
+        self.basis      = SubModule('*BASIS')
+        self.basis.properties.update({self.default.name : self.default})
+        self.basis.properties.update({self.special.name : self.special})
+
+        self.molecule    = Module('**MOLECULE')
+        self.molecule.submodules.update({self.basis.name : self.basis})
+###################
 
         #valid module names
         self.modules = {   '**HAMILTONIAN'       : self.hamiltonian,

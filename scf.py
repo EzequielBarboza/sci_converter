@@ -27,12 +27,12 @@ class Scf(object):
         self.modules = []
         if len(scf_file) > 0:
             self.parse(scf_file)
-        #perform a validation before proceeding, to make the atomst insertion safe
-        self.validateScf(self)
+            #perform a validation before proceeding, to make the atomst insertion safe
+            self.validateScf(self)
         #insert the atoms
         if len(atoms) > 0:
             #insert the atomst
-            scfSubmodule = self.getModule(self.template.wave_function).getSubmodule(self.template.scf)
+            scfSubmodule = self.getModule(self.template.wave_function).getSubModule(self.template, self.template.scf)
             if scfSubmodule :
                 atomst = self.template.atomst.shallow_copy()
                 for atom in atoms:
@@ -106,7 +106,7 @@ class Scf(object):
         #**WAVE FUNCTION IS MANDATORY
         wave_function = scf.getModule(template.wave_function)
         if not  wave_function : raise MissingInformation( str(scf) + ' state is invalid : there is no **WAVE FUNCTION module' )
-        if not wave_function.getSubmodule(template.scf) : raise MissingInformation(str(wave_function) + ' state is invalid: there is no *SCF submodule')
+        if not wave_function.getSubModule(template, template.scf) : raise MissingInformation(str(wave_function) + ' state is invalid: there is no *SCF submodule')
 
     def copy(self):
         the_copy = Scf()

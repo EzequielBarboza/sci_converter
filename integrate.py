@@ -13,9 +13,9 @@
 
 import os
 
-from j import J
+from j import *
 
-class Integrate(J):
+class Integrate(object):
     axis_enum = ['X', 'Y', 'Z']#enumeration of the axis
     # each index in the arrays represent an axis
     #gross translation of what is a dot, to number index in a array [x,y,z]=[0,0,0]
@@ -24,36 +24,34 @@ class Integrate(J):
     YZ = [1,2]
     XY = [0,1]
 
-    #since I found the perpendicular axis of a molecule, I can say that I can tranform it in two directions
-    #say, it is Z, there are (at least) two perpendicular self.p_planes to the molecule,
-    #XZ and YZ, then, I don't move the center of the coordinates: line1
-    #but move the other two, since there are 2 possibilities, we have to create 2 output files
-    #self.p_planes discovered, lets assemble 2 possible outputs
-    line1 = ['0.0', '0.0', '0.0']#each of this lines in the file, represent a line to be written to the output
-    line2 = ['0.0', '0.0', '0.0']#coordinates in the cartesian space
-    line3 = ['0.0', '0.0', '0.0']
+    def integrate(self):
+        #calculate what are we supposed to integrate here
+        self.p_planes = [self.YZ, self.XZ] if self.molecule.p_axis == 'Z' else [self.XZ, self.XY] if self.molecule.p_axis == 'X' else [self.YZ, self.XY]
+        #make the integration
+        two_d_int = self.createTwoDIntProperty()
 
-    def __init__(self, j, molecule, which_plane=1):
-##        j = J()
-        teste = j.__class__()
-        super(self, j)
-        self.validateJ(j)
-        self.modules = j.copy().modules
-        template = self.template#it is just easier to refer like this
-        self.p_planes = [YZ, XZ] if molecule.p_axis == 'Z' else [XZ, XY] if molecule.p_axis == 'X' else [YZ, XY]
+        self.getModule(self.template.visual).removeProperty(self.template.two_d)
+        self.getModule(self.template.visual).addProperty(self.template, two_d_int)
 
-        two_d_int = self.createTwoDIntProperty(which_plane)
-
-        self.getModule(template.visual).removeProperty(template.two_d)
-        self.getModule(template.visual).addProperty(template, two_d_int)
-
-    def createTwoDIntProperty(self, which_plane):
-        if which_plane == 2 :
+    def createTwoDIntProperty(self):
+        if self.which_plane == 2 :
             indexForLine2 = self.p_planes[1][0]#this is the value of the first axis
             indexForLine3 = self.p_planes[1][1]#this is the value of the second axis
         else :
             indexForLine2 = self.p_planes[0][0]#this is the value of the first axis
             indexForLine3 = self.p_planes[0][1]#this is the value of the second axis
+
+        #resolve the file name
+        self.integrate_name = self.integrate_name + '_' + self.axis_enum[indexForLine2] + self.axis_enum[indexForLine3]
+
+        #since I found the perpendicular axis of a molecule, I can say that I can tranform it in two directions
+        #say, it is Z, there are (at least) two perpendicular self.p_planes to the molecule,
+        #XZ and YZ, then, I don't move the center of the coordinates: line1
+        #but move the other two, since there are 2 possibilities, we have to create 2 output files
+        #self.p_planes discovered, lets assemble 2 possible outputs
+        line1 = ['0.0', '0.0', '0.0']#each of this lines in the file, represent a line to be written to the output
+        line2 = ['0.0', '0.0', '0.0']#coordinates in the cartesian space
+        line3 = ['0.0', '0.0', '0.0']
 
         line2[indexForLine2] = '10.0'
         line3[indexForLine3] = '10.0'
@@ -70,3 +68,38 @@ class Integrate(J):
         two_d_int.add_values(self.template, values)
 
         return two_d_int
+
+#I'm a J!!!
+class IntegrateDia(JDia, Integrate):
+    def __init__(self, jdia, which_plane=1):
+        self.integrate_name = 'integrate_dia'
+        #basic validation
+        self.validateJDia(jdia)
+        #grab a copy of the properties
+        jdia.copyPropertiesIntoAnotherJ(self)
+        #initialize which_plane
+        self.which_plane = which_plane
+        #do the integration
+        self.integrate()
+
+class IntegratePara(JPara, Integrate):
+    def __init__(self, jpara, which_plane=1):
+        self.integrate_name = 'integrate_para'
+        self.validateJPara(jpara)
+        #grab a copy of the properties
+        jpara.copyPropertiesIntoAnotherJ(self)
+        #initialize which_plane
+        self.which_plane = which_plane
+        #do the integration
+        self.integrate()
+
+class IntegrateTotal(JTotal, Integrate):
+    def __init__(self, jtotal, which_plane=1):
+        self.integrate_name = 'integrate_total'
+        self.validateJTotal(jtotal)
+        #grab a copy of the properties
+        jtotal.copyPropertiesIntoAnotherJ(self)
+        #initialize which_plane
+        self.which_plane = which_plane
+        #do the integration
+        self.integrate()

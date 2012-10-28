@@ -13,7 +13,7 @@
 import os
 
 class Job():
-    def __init__(self, scf_file_name, mol_file_name, output_files, molecule, lvcorr):
+    def __init__(self, scf_file_name, mol_file_name, output_files, molecule, master):
         self.scf_file_name      = scf_file_name.rsplit(os.sep)[-1]
         self.mol_file_name      = mol_file_name.rsplit(os.sep)[-1]
         self.london_file_name   = output_files[0].name.rsplit(os.sep)[-1]
@@ -24,9 +24,9 @@ class Job():
         self.int_para_file      = output_files[5].name.rsplit(os.sep)[-1]
         self.int_total_file     = output_files[6].name.rsplit(os.sep)[-1]
         self.molecule           = molecule
-        self.lvcorr             = lvcorr
+        self.master             = master
 
-    def write_job(self):
+    def __str__(self):
 #print the #atomic start
         printable = '#atomic start\n\n'
         for atom in self.molecule.atoms:
@@ -54,8 +54,8 @@ class Job():
         printable += '\n'
         printable += 'cp PAMXVC PAMXVC_scf'
         printable += '\n'
-#print the #london
-        printable += '\n#london\n\n'
+#print the #london#gauge
+        printable += '\n#london\n\n' if self.master.isLondon else '\n#gauge\n\n'
         printable += 'pam --mpi=8 --global-scratch-disk --mb=1200 --incmo'
         printable += ' --inp=' + self.london_file_name
         printable += ' --mol=' + self.mol_file_name
@@ -83,7 +83,7 @@ class Job():
         printable += ' --get="plot.2d.vector"'
         printable += ' --put="DFCOEF PAMXVC TBMO"\n'
         printable += 'cp plot.2d.vector plot.2d.vector.para\n'
-        if self.lvcorr:
+        if self.master.isLvcorr:
             printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
             printable += ' --inp=' + self.j_total_file
             printable += ' --mol=' + self.mol_file_name
@@ -92,7 +92,7 @@ class Job():
 
 #print the #integration
         printable += '\n#integration\n\n'
-        if self.lvcorr:
+        if self.master.isLvcorr:
             printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
             printable += ' --inp=' + self.int_total_file
             printable += ' --mol=' + self.mol_file_name
