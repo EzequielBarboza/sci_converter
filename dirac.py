@@ -55,7 +55,8 @@ class Dirac:
                             #copy the basis from the original file
                             original_atoms = self.molecule_original.atoms
                             atom.basis = original_atoms[original_atoms.index(symbol)].basis
-
+                            #added the coordinates
+                            atom.coordinates.append(coordinates)
                             atoms.append(atom)
                         else:
                             raise InvalidAtom(symbol)

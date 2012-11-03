@@ -63,6 +63,7 @@ class Molecule():
                     atoms[atoms.index(symbol)].coordinates.append(coordinates)
                 elif periodic_table.get(symbol):
                     atom = periodic_table.get(symbol).copy()
+                    atom.coordinates.append(coordinates)
                     atoms.append(atom)
                 else:
                     raise InvalidAtom(symbol)
