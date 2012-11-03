@@ -32,10 +32,11 @@ class Dirac:
         f.close()
 
         atoms = []
-        while i in range(len(scf_mol_file)):
+        i = 0
+        while i < len(scf_mol_file):
             line = scf_mol_file[i]
             if re.match(beginPattern, line):
-                while not re.match(endPattern, line):
+                while not re.match(endPattern, line) and i < len(scf_mol_file):
                     i += 1
                     line = scf_mol_file[i]
                     if re.match(Molecule.atom_pattern, line):
@@ -49,4 +50,5 @@ class Dirac:
                         else:
                             raise InvalidAtom(symbol)
                 break
+            i += 1
         return atoms
