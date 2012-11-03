@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
-# Name:        module1
+# Name:        main
 # Purpose: use a previously written program that processes the output of gaussian
 # turning it into a set of dirac input files
 #
@@ -26,6 +26,7 @@ from module         import Module
 from job            import Job
 from periodic_table import periodic_table
 from gauge          import Gauge
+from dirac          import Dirac
 
 #log_file = sys.argv[1] #soon we will be receiving the .log file (output from a gaussian processing)
 mol_file_name = sys.argv[1]
@@ -86,6 +87,15 @@ try:
     template = Template()
     molecule = Molecule(mol_file)
     scf = Scf(scf_file_input, molecule.atoms)
+
+    #if we are runing an inptest, call dirac and change the molecule
+    if scf.getModule(template.dirac).getProperty(template, template.inptest):
+        dirac = Dirac()
+        dirac.run(scf_file_name, mol_file_name)
+        #get the output of running Dirac and reset the molecule
+        molecule.resetMolecule(dirac.parse())
+        #remove the inptest and continue with the calculations
+        scf.getModule(template.dirac).removeProperty(template.inptest)
 
 #print the description of each atom
     for atom in molecule.atoms:

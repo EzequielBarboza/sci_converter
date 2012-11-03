@@ -23,86 +23,78 @@
 #-------------------------------------------------------------------------------
 import re
 
-from commons        import  is_number
+from commons        import  *
 from atoms          import  Atom
 from periodic_table import  periodic_table
 
 #keep information that can be retrieved from a mol file
+#a mol file is a collection of Atoms
 class Molecule():
     basis_pattern = re.compile('.+ BASIS .+')
+    atom_declaration_pattern = re.compile(' +[1-9]\. +[1-9]{2,2}')
+    atom_pattern = re.compile('[A-Z]{1,1}[a-z]* +[-]{0,1}[0-9]+\.[0-9]+ +[-]{0,1}[0-9]+\.[0-9]+ +[-]{0,1}[0-9]+\.[0-9]+')
     #the molecule is a file in a format given in the specifications
     #this file gives us a set of properties, which are extracted using the below routines
     def __init__(self, mol_file):
-        self.axis_enum = ['X', 'Y', 'Z']
-        self.mol_file = mol_file
-#calculating the perpendicular axis to the molecule
+        (self.atoms, self.header) = self.parse(mol_file)
+        (self.perpendicularAxis, self.biggestCoordinate) = self.initializeProperties()
+        self.magneticField = 'B' + self.perpendicularAxis + 'LAO'
+
+    def resetMolecule(self, atoms):
+        self.atoms = atoms
+        (self.perpendicularAxis, self.biggestCoordinate) = self.initializeProperties()
+        self.magneticField = 'B' + self.perpendicularAxis + 'LAO'
+
+#parsing: We are assuming that:
+    def parse(self, mol_file):
+        atoms = []
+        #mol_file[0] = DIRAC|INTGRL
+        #mol_file[1] = file name
+        #mol_file[3] = C=Cartesian, n= number of different atoms in molecule, {0} with symmetry? A in angstrons
+        molecule_header = [mol_file[0], mol_file[1], mol_file[3]]
+        for i in range(5, len(mol_file)):
+            line = mol_file[i]
+            if re.match(Molecule.basis_pattern, line):
+                atoms[-1].basis = line.strip()[-1]
+            elif re.match(Molecule.atom_pattern, line):
+                symbol = line.split()[0]
+                coordinates = line.split()[1:4]
+                if symbol in atoms:
+                    atoms[atoms.index(symbol)].coordinates.append(coordinates)
+                elif periodic_table.get(symbol):
+                    atom = periodic_table.get(symbol).copy()
+                    atoms.append(atom)
+                else:
+                    raise InvalidAtom(symbol)
+        return (atoms, molecule_header)
+
 #go by every atom of the molecule and get the coordinate closest to zero
 #the perpendicular axis to a molecule is found looking at every atom and getting the smallest values
 #the axis with more small values is the winner: it is the perpendicular axis to the molecule
-        self.p_axis = self.get_p_axis()
-        self.biggest_coordinate = self.get_biggest_coordinate()
-        self.symmetry = '0 1 1' if self.p_axis == 'X' else '1 0 1' if self.p_axis == 'Y' else '1 1 0'
-        self.magnetic_field = 'B' + self.p_axis + 'LAO'
-        #one list of the atoms declared for this molecule, just the Atomic symbols and its electronic distribution, not quantity or place in the molecule
-        self.atoms = self.get_atoms()
-
-    #the contents of a molecule should be a map of strings
-    def get_p_axis(self):
-        totalizator = [0, 0, 0]#each of the indexes refer to an axis of the cartesian space
-        for line in self.mol_file :#run through the file searching for values near 0 'zero'
-            data = line.split()
-            if len(data) >= 4:#it is agreed that the lines must have this length and all the values should be numbers
-                if not is_number(data[1]) : continue
-                if not is_number(data[2]) : continue
-                if not is_number(data[3]) : continue
-
+    def initializeProperties(self):
+        totalizatorPerpendicular = [0, 0, 0]#each of the indexes refer to an axis of the cartesian space
+        biggestCoordinate = float("-inf")
+        for atom in self.atoms:
+            for coordinate in atom.coordinates:
                 axis = [
-                    ('X', 0, abs(float(data[1]))),
-                    ('Y', 1, abs(float(data[2]))),
-                    ('Z', 2, abs(float(data[3])))]
+                    ('X', 0, abs(float(coordinate[0]))),
+                    ('Y', 1, abs(float(coordinate[1]))),
+                    ('Z', 2, abs(float(coordinate[2])))]
                 temp = sorted(axis, key=lambda eixo:eixo[2] )
-
-                totalizator[temp[0][1]] += 1
-
+                totalizatorPerpendicular[temp[0][1]] += 1
+                biggestCoordinate = temp[2][2] if temp[2][2] > biggestCoordinate else biggestCoordinate
         greater = 0
-        for i in range(len(totalizator)):
-            if totalizator[i] > totalizator[greater]:
+        for i in range(len(totalizatorPerpendicular)):
+            if totalizatorPerpendicular[i] > totalizatorPerpendicular[greater]:
                 greater = i
-        return self.axis_enum[greater]
+        return (axis_enum[greater], biggestCoordinate)
 
-    #get the biggest coordinate of any atom in a molucule in any axis
-    def get_biggest_coordinate(self):
-        biggest_ = 0
-        for line in self.mol_file :
-            if len(line.split()) >= 4 :
-                x = abs(float(line.split()[1])) if is_number(line.split()[1])else ""
-                y = abs(float(line.split()[2])) if is_number(line.split()[2])else ""
-                z = abs(float(line.split()[3])) if is_number(line.split()[3])else ""
-                if x == "" or y == "" or z == "" :#do not compute invalid lines
-                    continue
-                if biggest_ < x :
-                    biggest_ = x
-                if biggest_ < y :
-                    biggest_ = y
-                if biggest_ < z:
-                    biggest_ = z
-        return biggest_
+    def __str__(self):
+        printable = ''
+        for atom in self.atoms:
+            printable += str(atom)
 
-    def get_atoms(self):
-        atoms = []
-        for line in self.mol_file:
-            if len(line.split()) >= 4 :
-                #for each line in the file, try to parse all the numeric values
-                #if everything goes allright, this line contains a valid Atom
-                x = abs(float(line.split()[1])) if is_number(line.split()[1])else ""
-                y = abs(float(line.split()[2])) if is_number(line.split()[2])else ""
-                z = abs(float(line.split()[3])) if is_number(line.split()[3])else ""
-                if x == "" or y == "" or z == "" :#do not compute invalid lines
-                    continue
-                atom = periodic_table.get(line.split()[0])
-                if atom and not atom in atoms:
-                    atoms.append(atom)
-            elif re.match(self.basis_pattern, line):
-                if len(atoms) != 0 and len(atoms[-1].basis) == 0:
-                    atoms[-1].basis = line.strip()
-        return atoms
+
+#gotta parse the molecule file and create its units. latter the mol file will be reconstructed and can be recreated too, adding or changing the atoms.
+##    def set_atoms(self, atoms)
+

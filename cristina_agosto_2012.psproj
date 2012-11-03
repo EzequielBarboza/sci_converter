@@ -30,46 +30,50 @@ FileName=$[Project-Path]commons.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node3]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]integrate.py
+FileName=$[Project-Path]dirac.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node4]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]j.py
+FileName=$[Project-Path]integrate.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node5]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]job.py
+FileName=$[Project-Path]j.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node6]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]london.py
+FileName=$[Project-Path]job.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node7]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]main.py
+FileName=$[Project-Path]london.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node8]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]module.py
+FileName=$[Project-Path]main.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node9]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]molecule.py
+FileName=$[Project-Path]module.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node10]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]periodic_table.py
+FileName=$[Project-Path]molecule.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node11]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]scf.py
+FileName=$[Project-Path]periodic_table.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node12]
+ClassName=TProjectFileNode
+FileName=$[Project-Path]scf.py
+
+[Project\ChildNodes\Node0\ChildNodes\Node13]
 ClassName=TProjectFileNode
 FileName=$[Project-Path]template.py
 
 [Project\ChildNodes\Node0\ChildNodes]
-Count=13
+Count=14
 
 [Project\ChildNodes\Node1]
 ClassName=TProjectRunConfiguationsNode

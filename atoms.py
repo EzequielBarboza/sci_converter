@@ -14,9 +14,9 @@ import string
 import os
 
 class Atom():
-    t_g = 'gerade'
-    t_u = 'ungerade'
-    pauling = [(1, t_g, 2),
+    t_g = 'gerade'#define the gerade type
+    t_u = 'ungerade'#define the ungerade type
+    pauling = [(1, t_g, 2),#the distribution of eletrons in each sublayer, associated with the type of the eletrons(regarding the sublayer they occupy)
                (2, t_g, 2),
                (2, t_u, 6),
                (3, t_g, 2),
@@ -35,7 +35,7 @@ class Atom():
                (5, t_u, 14),
                (6, t_g, 10),
                (7, t_u, 6)]
-    layers_capacity = { 1:2,
+    layers_capacity = { 1:2,#the capacity for each layer,
                         2:8,
                         3:18,
                         4:32,
@@ -47,6 +47,7 @@ class Atom():
         self.z = z
         self.symbol = symbol
         self.fancy_name = fancy_name
+        self.coordinates = []
         (self.cs, self.os) = self.get_shells()
         self.basis = ''
         self.coef  = (self.symbol + '_') if len(self.symbol) < 2 else self.symbol
@@ -56,6 +57,9 @@ class Atom():
         #if there are open shell, add one to the type of orbitals
         if self.os[0] > 0:
             self.types_of_layers += 1
+
+    def copy(self):
+        return Atom(self.z, self.symbol, self.fancy_name)
 
     #prints out the inp representation of this atom
     def print_inp_file(self, periodic_table, scf_file, template, output_path):
@@ -146,6 +150,13 @@ class Atom():
         output_file = open(output_path + os.sep + self.symbol.lower() + '.mol', 'w')
         output_file.write(printable)
         output_file.close()
+
+    def __eq__(self, other):
+        if isinstance(other, Atom):
+            return other.symbol == self.symbol
+        elif isinstance(other, str):
+            return other == self.symbol
+        return False
 
     def __str__(self):
         printable = self.coef + ' ' + str(self.types_of_layers) + '\n'

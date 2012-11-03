@@ -26,7 +26,7 @@ class Integrate(object):
 
     def integrate(self):
         #calculate what are we supposed to integrate here
-        self.p_planes = [self.YZ, self.XZ] if self.molecule.p_axis == 'Z' else [self.XZ, self.XY] if self.molecule.p_axis == 'X' else [self.YZ, self.XY]
+        self.p_planes = [self.YZ, self.XZ] if self.molecule.perpendicularAxis == 'Z' else [self.XZ, self.XY] if self.molecule.perpendicularAxis == 'X' else [self.YZ, self.XY]
         #make the integration
         two_d_int = self.createTwoDIntProperty()
 

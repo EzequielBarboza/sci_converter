@@ -37,7 +37,7 @@ class J(Scf):
 #add the .LONDON only if it is a london calculation
         if isLondon :
             london = template.london.shallow_copy()
-            london.add_value(template, molecule.p_axis)
+            london.add_value(template, molecule.perpendicularAxis)
             visual.addProperty(template, london)
 
 #remove all the modules, except the ones bellow
@@ -84,11 +84,11 @@ class J(Scf):
         visual.addProperty(template, j)
 
         # two_d
-        biggest_ = str(math.ceil(self.molecule.biggest_coordinate * 2))
+        biggest_ = str(math.ceil(self.molecule.biggestCoordinate * 2))
         fst_point = ['-' + biggest_, '-' + biggest_]
         snd_point = [biggest_, '-' + biggest_]
         trd_point = ['-' + biggest_, biggest_]
-        index = 0 if self.molecule.p_axis == 'X' else 1 if self.molecule.p_axis == 'Y' else 2
+        index = 0 if self.molecule.perpendicularAxis == 'X' else 1 if self.molecule.perpendicularAxis == 'Y' else 2
         fst_point.insert(index, '1.0')
         snd_point.insert(index, '1.0')
         trd_point.insert(index, '1.0')

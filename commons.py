@@ -5,6 +5,7 @@ import re
 
 value_pattern   = re.compile('^ *[^\*\.#]')
 comment_pattern = re.compile(' *#.*')
+axis_enum = ['X', 'Y', 'Z']
 
 def is_number(s):
     try:
@@ -30,6 +31,13 @@ class InvalidName(Exception):
 
     def __str__(self):
         return repr(self.msg)
+
+class InvalidAtom(Exception):
+    def __init__(self, atom):
+        self.atom = atom
+
+    def __str__(self):
+        return self.atom + ' is not a valid Atom'
 
 class MissingInformation(Exception):
     def __init__(self, msg):

@@ -35,7 +35,7 @@ class London(Scf):
         nmr.addProperty(self.template, intflg)
 
         properties = self.template.prop_module.shallow_copy()
-        magnetic_field   = template.properties.get('.' + molecule.magnetic_field).shallow_copy()
+        magnetic_field   = template.properties.get('.' + molecule.magneticField).shallow_copy()
         properties.addProperty(self.template, magnetic_field)
         properties.addSubModule(self.template, nmr)
 

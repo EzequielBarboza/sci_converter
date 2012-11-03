@@ -14,6 +14,7 @@
 ##from molecule import Molecule
 ##from module import Module,Property,SubModule
 from scf import Scf
+from commons import axis_enum
 
 #copy a set of modules from a given scf, generates a set of outputs different from the london
 class Gauge(Scf):
@@ -36,13 +37,12 @@ class Gauge(Scf):
         b_operator  = self.template.b_operator.shallow_copy()
         analize     = self.template.analize.shallow_copy()
 
-        a_operator.add_value(self.template, '\'B_' + molecule.p_axis.lower() + ' oper\'')
-        b_operator.add_value(self.template, '\'B_' + molecule.p_axis.lower() + ' oper\'')
+        a_operator.add_value(self.template, '\'B_' + molecule.perpendicularAxis.lower() + ' oper\'')
+        b_operator.add_value(self.template, '\'B_' + molecule.perpendicularAxis.lower() + ' oper\'')
 
-        a_operator.add_value(self.template, molecule.p_axis + 'AVECTOR')
-        b_operator.add_value(self.template, molecule.p_axis + 'AVECTOR')
+        a_operator.add_value(self.template, molecule.perpendicularAxis + 'AVECTOR')
+        b_operator.add_value(self.template, molecule.perpendicularAxis + 'AVECTOR')
 
-        axis_enum = molecule.axis_enum
         a_operator.add_value(self.template, '\'' + axis_enum[0] + 'DIPLEN\'')
         b_operator.add_value(self.template, '\'' + axis_enum[0] + 'DIPLEN\'')
 
