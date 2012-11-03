@@ -15,10 +15,16 @@ import os
 import string
 
 from molecule import Molecule
+from periodic_table import periodic_table
 
 class Dirac:
-    def run(self, scf, mol):
-        retcode = subprocess.call(["pam", "--global-scratch-disk", "--inp="+scf, "--mol="+mol])
+    def __init__(self, scf_file_name, mol_file_name, molecule_original):
+        self.scf_file_name = scf_file_name
+        self.mol_file_name = mol_file_name
+        self.molecule_original = molecule_original
+
+    def run(self):
+        retcode = subprocess.call(["pam", "--global-scratch-disk", "--inp="+self.scf_file_name, "--mol="+self.mol_file_name])
 
     def parse(self):
 
@@ -46,6 +52,10 @@ class Dirac:
                             atoms[atoms.index(symbol)].coordinates.append(coordinates)
                         elif periodic_table.get(symbol):
                             atom = periodic_table.get(symbol).copy()
+                            #copy the basis from the original file
+                            original_atoms = self.molecule_original.atoms
+                            atom.basis = original_atoms[original_atoms.index(symbol)].basis
+
                             atoms.append(atom)
                         else:
                             raise InvalidAtom(symbol)

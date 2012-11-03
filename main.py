@@ -90,8 +90,8 @@ try:
 
     #if we are runing an inptest, call dirac and change the molecule
     if scf.getModule(template.dirac).getProperty(template, template.inptest):
-        dirac = Dirac()
-        dirac.run(scf_file_name, mol_file_name)
+        dirac = Dirac(scf_file_name, mol_file_name, molecule)
+        dirac.run()
         #get the output of running Dirac and reset the molecule
         molecule.resetMolecule(dirac.parse())
         #remove the inptest and continue with the calculations
