@@ -34,11 +34,11 @@ scf_file_name = sys.argv[2]
 
 #Two main input files
 f = open(mol_file_name, 'r')
-mol_file = map(string.strip, f.readlines())
+mol_input = map(string.strip, f.readlines())
 f.close()
 
 f = open(scf_file_name, 'r')
-scf_file_input = map(string.strip, f.readlines())
+scf_input = map(string.strip, f.readlines())
 f.close()
 
 #this guy is wrapping the call to the existing library cris_utility that have the ability to generate the xyz
@@ -46,7 +46,7 @@ f.close()
 #xyz_file = cris_utility.getXyz(log_file)#pass the .log file
 
 #now I gotta generate the .mol
-#mol_file = create_mol(xyz_file)
+#mol_input = create_mol(xyz_file)
 
 #file manipulation module
 
@@ -70,8 +70,8 @@ os.mkdir(output_path)
 os.mkdir(london_folder)
 os.mkdir(gauge_folder)
 
-mol_file_copy = output_path + os.sep + os.path.basename(mol_file_name)
-shutil.copy2(mol_file_name, mol_file_copy)
+##mol_file_copy = output_path + os.sep + os.path.basename(mol_file_name)
+##shutil.copy2(mol_file_name, mol_file_copy)
 
 print 'Working on the following files'
 print 'Mol file: '+ mol_file_name
@@ -84,9 +84,9 @@ print 'Output folder: ' + output_path
 try:
     #assemble input
     #the template should be static, as the periodic table
-    template = Template()
-    molecule = Molecule(mol_file)
-    scf = Scf(scf_file_input, molecule.atoms)
+    template    = Template()
+    molecule    = Molecule(mol_input)
+    scf         = Scf(scf_input, molecule.atoms)
 
     #if we are runing an inptest, call dirac and change the molecule
     if scf.getModule(template.dirac).getProperty(template, template.inptest):
@@ -143,6 +143,7 @@ try:
 
 #open output files
     scf_file = open(output_path + os.sep + scf_file_name.rsplit(os.sep)[-1], 'w')#pay attention: the scf_file_output has the same name parsed when creting the job file
+    mol_file = open(output_path + os.sep + mol_file_name.rsplit(os.sep)[-1], 'w')#pay attention: the scf_file_output has the same name parsed when creting the job file
 
     london_file            = open(london_folder + 'london.inp', 'w')
     london_job_file        = open(london_folder + 'job.sub', 'w')
@@ -172,7 +173,7 @@ try:
 
     gauge_files = [gauge_file, j_gauge_dia_file, j_gauge_para_file, j_gauge_total_file, int_gauge_dia_file1, int_gauge_para_file1, int_gauge_total_file1, int_gauge_dia_file2, int_gauge_para_file2 , int_gauge_total_file2, gauge_job_file]
 
-    other_files = [scf_file]
+    other_files = [scf_file, mol_file]
 
     all_files = [london_files, gauge_files, other_files]
 #5.job : this guy gotta be here because the job uses all the file names used for generate all the files
@@ -185,7 +186,7 @@ try:
     gauge_objects = [   gauge,
                         j_gauge_dia, j_gauge_para, j_gauge_total,
                         integrate_gauge_dia_1, integrate_gauge_para_1, integrate_gauge_total_1, integrate_gauge_dia_2, integrate_gauge_para_2, integrate_gauge_total_2, gauge_job]
-    other_objects = [   scf ]
+    other_objects = [   scf, molecule ]
 
     for i in range(len(london_files)):
         london_files[i].write(str(london_objects[i]))

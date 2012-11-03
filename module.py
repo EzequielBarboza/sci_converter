@@ -13,7 +13,7 @@
 
 import re
 from atoms import Atom
-from commons import InvalidParameter, is_value, is_comment
+from commons import *
 
 #one property may contain values. The values can be atoms, strings, or numbers
 class Property:
@@ -37,9 +37,9 @@ class Property:
 
     #return a string reprensentation
     def __str__(self):
-        printable = self.name +'\n'
+        printable = self.name +NEW_LINE
         for i in self.values:
-            printable += i.__str__() + '\n'
+            printable += i.__str__() + NEW_LINE
         return printable
 
     #return a full copy
@@ -130,7 +130,7 @@ class Module:#this are the guys with 2* (**)
         if not template.modules.get(self.name).properties.get(prop.name) : raise InvalidParameter(prop, self)
 
     def __str__(self):
-        printable = self.name + '\n'
+        printable = self.name + NEW_LINE
         for i in self.properties.itervalues():
             printable += i.__str__()
         for i in self.submodules.itervalues():

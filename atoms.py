@@ -12,6 +12,7 @@
 
 import string
 import os
+from commons import *
 
 class Atom():
     t_g = 'gerade'#define the gerade type
@@ -138,13 +139,13 @@ class Atom():
     def print_mol_file(self, output_path):
         printable = 'DIRAC\n'
         printable += self.fancy_name + ' atom\n'
-        printable += '\n'
+        printable += NEW_LINE
         #the spaces are important
         printable += 'C   1              A\n'
         printable += '      ' + str(self.z) + '.' + '   1\n'
         #the number of spaces are important
         printable += self.symbol + '        0.000000000      0.000000000      0.000000000\n'
-        printable += self.basis + '\n'
+        printable += self.basis + NEW_LINE
         printable += 'FINISH\n'
         #print to the output
         output_file = open(output_path + os.sep + self.symbol.lower() + '.mol', 'w')
@@ -159,7 +160,7 @@ class Atom():
         return False
 
     def __str__(self):
-        printable = self.coef + ' ' + str(self.types_of_layers) + '\n'
+        printable = self.coef + ' ' + str(self.types_of_layers) + NEW_LINE
         # first the closed, if they exist
         number_of_closed_orbitals = 0
         if self.cs[3] > 0:#just if there is any closed orbitals
@@ -169,19 +170,19 @@ class Atom():
                 printable += '1..' + str(number_of_closed_orbitals)
             else:
                 printable += '1'
-            printable += '\n'
+            printable += NEW_LINE
             printable += str(float(self.cs[0] + self.cs[1]) / self.cs[3]) #ocupation = lotacao / capacidade#in the end will always be ONE
         # then the opened
         if self.os[3] > 0:
             #depends on whether I want to consider the closed (they might not exist)
             number_of_open_orbitals = self.os[3] / 2
             if number_of_closed_orbitals > 0 :
-                printable += '\n'
+                printable += NEW_LINE
                 printable += str(number_of_closed_orbitals + 1) + '..' + str(number_of_closed_orbitals + number_of_open_orbitals)
             elif number_of_open_orbitals > 1:
                 printable += '1..' + str(number_of_open_orbitals)
             else:
                 printable += '1'
-            printable += '\n'
+            printable += NEW_LINE
             printable += str(float(self.os[1]) / self.os[3]) #ocupation = lotacao / capacidade#in the end will always be ONE
         return printable

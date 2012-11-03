@@ -51,11 +51,11 @@ class Molecule():
         #mol_file[0] = DIRAC|INTGRL
         #mol_file[1] = file name
         #mol_file[3] = C=Cartesian, n= number of different atoms in molecule, {0} with symmetry? A in angstrons
-        molecule_header = [mol_file[0], mol_file[1], mol_file[3]]
+        molecule_header = [mol_file[0], mol_file[1], mol_file[2], mol_file[3]]
         for i in range(5, len(mol_file)):
             line = mol_file[i]
             if re.match(Molecule.basis_pattern, line):
-                atoms[-1].basis = line.strip()[-1]
+                atoms[-1].basis = line.strip()
             elif re.match(Molecule.atom_pattern, line):
                 symbol = line.split()[0]
                 coordinates = line.split()[1:4]
@@ -91,9 +91,15 @@ class Molecule():
 
     def __str__(self):
         printable = ''
+        for line in self.header:
+            printable += line + NEW_LINE
         for atom in self.atoms:
-            printable += str(atom)
-
+            printable += six_spaces + str(atom.z) + '.' + three_spaces + str(len(atom.coordinates)) + NEW_LINE
+            for coordinate in atom.coordinates:
+                printable += atom.symbol + eight_spaces + six_spaces.join(map(str, coordinate)) + NEW_LINE
+            printable += atom.basis + NEW_LINE
+        printable += FINISH + NEW_LINE
+        return printable
 
 #gotta parse the molecule file and create its units. latter the mol file will be reconstructed and can be recreated too, adding or changing the atoms.
 ##    def set_atoms(self, atoms)

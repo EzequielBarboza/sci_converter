@@ -7,6 +7,13 @@ value_pattern   = re.compile('^ *[^\*\.#]')
 comment_pattern = re.compile(' *#.*')
 axis_enum = ['X', 'Y', 'Z']
 
+three_spaces    = '   '
+six_spaces      = '      '
+eight_spaces    = '        '
+
+FINISH = 'FINISH'
+NEW_LINE = '\n'
+
 def is_number(s):
     try:
         float(s) # for int, long and float

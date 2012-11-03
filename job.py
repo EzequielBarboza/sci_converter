@@ -11,6 +11,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 import os
+from commons import *
 
 class Job():
     def __init__(self, scf_file_name, mol_file_name, output_files, molecule, master):
@@ -34,7 +35,7 @@ class Job():
             printable += ' --inp=' + atom.symbol.lower() + '.inp'
             printable += ' --mol=' + atom.symbol.lower() + '.mol'
             printable += ' --get="DFACMO"\n'
-            printable += 'cp DFACMO ' + atom.coef + '\n'
+            printable += 'cp DFACMO ' + atom.coef + NEW_LINE
 #print the #scf
         printable += '\n#scf\n\n'
         printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
@@ -49,24 +50,24 @@ class Job():
         printable += ' --inp=' + self.scf_file_name
         printable += ' --mol=' + self.mol_file_name
         printable += ' --get="DFCOEF PAMXVC TBMO"'
-        printable += '\n'
+        printable += NEW_LINE
         printable += 'cp DFCOEF DFCOEF_scf'
-        printable += '\n'
+        printable += NEW_LINE
         printable += 'cp PAMXVC PAMXVC_scf'
-        printable += '\n'
+        printable += NEW_LINE
 #print the #london#gauge
         printable += '\n#london\n\n' if self.master.isLondon else '\n#gauge\n\n'
         printable += 'pam --mpi=8 --global-scratch-disk --mb=1200 --incmo'
         printable += ' --inp=' + self.london_file_name
         printable += ' --mol=' + self.mol_file_name
         printable += ' --get="DFCOEF PAMXVC TBMO"'
-        printable += '\n'
+        printable += NEW_LINE
         printable += 'cp DFCOEF DFCOEF_l'
-        printable += '\n'
+        printable += NEW_LINE
         printable += 'cp PAMXVC PAMXVC_l'
-        printable += '\n'
+        printable += NEW_LINE
         printable += 'cp TBMO TBMO_l'
-        printable += '\n'
+        printable += NEW_LINE
 #print the #currents
         printable += '\n#currents\n\n'
         printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
@@ -74,9 +75,9 @@ class Job():
         printable += ' --mol=' + self.mol_file_name
         printable += ' --get="plot.2d.vector"'
         printable += ' --put="DFCOEF PAMXVC TBMO"'
-        printable += '\n'
+        printable += NEW_LINE
         printable += 'cp plot.2d.vector plot.2d.vector.dia'
-        printable += '\n'
+        printable += NEW_LINE
         printable += 'pam --mpi=8 --global-scratch-disk --mb=1200'
         printable += ' --inp=' + self.j_para_file
         printable += ' --mol=' + self.mol_file_name
