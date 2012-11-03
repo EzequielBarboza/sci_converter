@@ -12,6 +12,7 @@
 import subprocess
 import re
 import os
+import string
 
 from molecule import Molecule
 
