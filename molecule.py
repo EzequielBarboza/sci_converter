@@ -26,6 +26,7 @@ import re
 from commons        import  *
 from atoms          import  Atom
 from periodic_table import  periodic_table
+import string
 
 #keep information that can be retrieved from a mol file
 #a mol file is a collection of Atoms
